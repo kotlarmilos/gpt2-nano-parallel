@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "generated_by": "scripts/generate_artifacts.py",
+  "status_definitions": {
+    "analytical": "Derived from explicit formulas.",
+    "simulated": "Produced by deterministic software simulation.",
+    "measured": "Observed from a real local execution.",
+    "pending": "Not run on the hardware needed for the claim."
+  },
+  "claims": [
+    {
+      "id": "memory-and-communication",
+      "status": "analytical",
+      "files": [
+        "artifacts/publication_report.json",
+        "artifacts/figures/zero_memory.svg"
+      ],
+      "note": "Formula outputs for the report and memory figure. Measured Gloo timing is tracked in a separate claim."
+    },
+    {
+      "id": "pipeline-and-routing",
+      "status": "simulated",
+      "files": [
+        "artifacts/publication_report.json",
+        "artifacts/figures/pipeline_schedule.svg"
+      ],
+      "note": "Deterministic event and token-routing simulations."
+    },
+    {
+      "id": "local-cpu-allreduce",
+      "status": "measured",
+      "files": [
+        "artifacts/cpu_allreduce_measured.json"
+      ],
+      "note": "Validated local CPU Gloo process measurement; not a GPU scaling result."
+    },
+    {
+      "id": "local-gloo-allreduce-model-validation",
+      "status": "measured",
+      "files": [
+        "artifacts/gloo_allreduce_model_validation.json"
+      ],
+      "note": "Validated local CPU Gloo all-reduce sweep against the analytical ring byte model; not a GPU scaling result."
+    },
+    {
+      "id": "multi-gpu-scaling",
+      "status": "pending",
+      "files": [],
+      "note": "No multi-GPU run was performed."
+    }
+  ],
+  "files": {
+    "artifacts/publication_report.json": {
+      "sha256": "74686c3f41455692fc3cfac2473afe8ecae0c7b31e5dea1169029762883886bf"
+    },
+    "artifacts/figures/zero_memory.svg": {
+      "sha256": "6a5a3d6f12a012b4d2a2fa4740e6a0fd89ab4399d715a7d669b1ce02b64541e7"
+    },
+    "artifacts/figures/pipeline_schedule.svg": {
+      "sha256": "7d44027f191d85e6fc2e60bf049f9b668fc62ec7babaa13eeb0bd5d9535a0120"
+    },
+    "artifacts/cpu_allreduce_measured.json": {
+      "sha256": "b3688233782a7987ce8a68010014a3e24e7118f607d055ef0afc29f236969fce"
+    },
+    "artifacts/gloo_allreduce_model_validation.json": {
+      "sha256": "1a4793473834a699b822961e4246d391e828d344d96ab7257031b6b8a0bdc8f3"
+    }
+  }
+}
