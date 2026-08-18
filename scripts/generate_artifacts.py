@@ -45,6 +45,28 @@ def _finite_number(value: object) -> bool:
     )
 
 
+def _derived_values_match(actual: object, expected: object) -> bool:
+    if isinstance(actual, bool) or isinstance(expected, bool):
+        return actual is expected
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        return math.isclose(
+            float(actual),
+            float(expected),
+            rel_tol=1e-12,
+            abs_tol=1e-15,
+        )
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(
+            _derived_values_match(actual[key], expected[key]) for key in actual
+        )
+    if isinstance(actual, list) and isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            _derived_values_match(actual_item, expected_item)
+            for actual_item, expected_item in zip(actual, expected, strict=True)
+        )
+    return actual == expected
+
+
 def _validate_cpu_measurement(raw: bytes) -> dict[str, Any]:
     """Validate that an artifact was produced by the local Gloo demo."""
 
@@ -354,7 +376,7 @@ def _validate_nccl_study(
         raise ValueError("NCCL study splits do not match the validated config")
     derived = _derive_study_analysis(config, loaded_artifacts)
     for key, expected_value in derived.items():
-        if study.get(key) != expected_value:
+        if not _derived_values_match(study.get(key), expected_value):
             raise ValueError(f"NCCL study {key} does not match raw artifacts")
     held_out = study.get("held_out")
     if not isinstance(held_out, dict):

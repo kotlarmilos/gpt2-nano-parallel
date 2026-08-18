@@ -25,6 +25,15 @@ def _load_generator() -> ModuleType:
 
 
 class ArtifactTests(unittest.TestCase):
+    def test_derived_value_comparison_tolerates_machine_epsilon_only(self) -> None:
+        generator = _load_generator()
+        expected = {"fit": [1.0, {"error": 3.598190315577366e-10}]}
+        equivalent = {"fit": [1.0, {"error": 3.5981903155773653e-10}]}
+        changed = {"fit": [1.0, {"error": 0.01}]}
+
+        self.assertTrue(generator._derived_values_match(equivalent, expected))
+        self.assertFalse(generator._derived_values_match(changed, expected))
+
     @staticmethod
     def _measurement() -> dict[str, object]:
         return {
