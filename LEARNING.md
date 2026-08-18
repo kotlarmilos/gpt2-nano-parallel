@@ -1,11 +1,10 @@
 # Deriving five transformer parallelism strategies from first principles
 
 This note builds the five modeled strategies in this repository from ownership,
-bytes, and dependency constraints. Every formula below describes an analytical
-calculator or a deterministic simulator. None of the ZeRO, tensor, context,
-pipeline, or expert results is a measured multi-device benchmark. The repository
-keeps that boundary explicit in `README.md` lines 9 to 11, `article.md` lines 3
-to 12, and `scripts/generate_artifacts.py` lines 223 to 263.
+bytes, and dependency constraints. The formulas describe analytical calculators
+or deterministic simulators. A separate single-node NCCL study measures the
+collective primitives used by communication-only strategy signatures. It does not
+measure complete ZeRO, tensor, context, pipeline, or expert training systems.
 
 The publication configuration uses the gpt2-nano shape in
 `configs/publication.toml` lines 1 to 15. It sets `44_000_000` parameters, 12
@@ -600,8 +599,56 @@ state, tensor parallelism splits wide layers, context parallelism splits long
 sequences, pipeline parallelism splits depth, and expert parallelism splits sparse
 capacity. The generated manifest preserves the evidence boundary. Analytical
 formula outputs are marked on `artifacts/manifest.json` lines 11 to 19,
-deterministic pipeline and routing simulations are marked on lines 20 to 28, and
-multi-GPU scaling stays pending on lines 37 to 42.
+deterministic pipeline and routing simulations are marked separately, and the
+single-node NCCL collective study is marked as measured communication evidence.
+
+## Calibrating collective models on real GPUs
+
+The analytical model writes collective time as transmitted bytes divided by
+effective bandwidth plus a latency term.
+
+```text
+T_collective = bytes_per_rank / bandwidth
+             + latency_steps * latency
+```
+
+A tempting shortcut fits one bandwidth and latency pair for every collective.
+The publication extension tests whether that shortcut holds. It measures
+all-reduce, reduce-scatter, all-gather, all-to-all, and simultaneous neighbor
+exchange at world sizes `2` and `4`. The calibration sizes are `4 KiB`, `64 KiB`,
+`1 MiB`, and `16 MiB`. The held-out sizes are `16 KiB`, `256 KiB`, `4 MiB`, and
+`64 MiB`.
+
+The raw artifacts contain `80` measured rows from four RTX 4090 GPUs. Every row
+records `5` warmup iterations and `20` measured iterations. The study takes the
+maximum rank time for each iteration before averaging. This makes the reported
+collective duration reflect the slowest participating rank rather than one
+selected process.
+
+One shared ring model reaches `22.91%` mean absolute relative error on `40`
+held-out rows. Primitive-specific models lower that error to `10.87%`. Their
+effective bandwidths range from `2.65` to `4.52 GiB/s`, and their fitted latency
+values range from `4.48` to `72.45 microseconds`. These are empirical fit
+parameters for one host. They are not nominal PCIe or GPU specifications.
+
+The planner composes held-out primitive measurements into six signatures.
+Data parallelism uses one all-reduce. ZeRO-2 uses one reduce-scatter and one
+all-gather. Tensor parallelism uses two all-reduces. Context parallelism uses one
+all-gather proxy. Pipeline parallelism uses one simultaneous neighbor exchange
+proxy. Expert parallelism uses two all-to-all calls.
+
+The predicted winner matches the measured composition in `7` of `8` scenarios.
+The miss occurs at world size `4` and `16 KiB`, where the model predicts data
+parallelism and the measured composition favors the context-parallel all-gather
+proxy. This evaluates the cost model, not the quality of a complete training
+strategy.
+
+`src/gpt2_nano_parallel/gpu_collectives.py` owns measurement, raw validation, and
+held-out analysis. `src/gpt2_nano_parallel/topology_planner.py` owns fitting,
+primitive composition, ranking, and planner evaluation.
+`scripts/generate_artifacts.py` reloads the hash-bound raw artifacts and
+recomputes every model, held-out comparison, error summary, and planner outcome
+before the manifest can mark the study as measured.
 
 ## Reading the results correctly
 
@@ -610,12 +657,12 @@ formula. A simulated result comes from deterministic software events or token
 routes. A measured result comes from code that ran on hardware and recorded an
 observation.
 
-This repository contains an optional local CPU collective, not a multi-GPU
-benchmark. `src/gpt2_nano_parallel/cpu_demo.py` creates local Gloo workers,
+This repository contains both an optional local CPU collective and a measured
+single-node GPU collective study. `src/gpt2_nano_parallel/cpu_demo.py` creates local Gloo workers,
 performs `dist.all_reduce(value)`, and records measured local timing on lines 20
 to 41 and 147 to 159. `scripts/run_cpu_demo.py` writes that optional artifact on
 lines 15 to 17. `scripts/generate_artifacts.py` validates that artifact as local
 CPU evidence on lines 42 to 105 and explicitly describes it as not a GPU scaling
-result on lines 207 to 210. That measured path does not change the status of the
-five modeled large-model strategies, which remain analytical or simulated in this
-repository.
+result on lines 207 to 210. The NCCL path measures communication primitives on
+one topology. Neither measured path turns the five modeled large-model strategies
+into end-to-end distributed training evidence.

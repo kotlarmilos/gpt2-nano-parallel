@@ -44,9 +44,13 @@
     },
     {
       "id": "multi-gpu-scaling",
-      "status": "pending",
-      "files": [],
-      "note": "The topology-calibrated NCCL study is implemented but has not yet run on the required multi-GPU host."
+      "status": "measured",
+      "files": [
+        "artifacts/nccl-publication/raw-world-size-2.json",
+        "artifacts/nccl-publication/raw-world-size-4.json",
+        "artifacts/nccl-publication/results.json"
+      ],
+      "note": "Validated single-node NCCL collective calibration with held-out message sizes; not end-to-end distributed model training."
     }
   ],
   "files": {
@@ -64,6 +68,15 @@
     },
     "artifacts/gloo_allreduce_model_validation.json": {
       "sha256": "1a4793473834a699b822961e4246d391e828d344d96ab7257031b6b8a0bdc8f3"
+    },
+    "artifacts/nccl-publication/results.json": {
+      "sha256": "84dd5b975e8b8baddb7b3ac596b915808ff84e8eb19c213aa8e91cf1a58459a0"
+    },
+    "artifacts/nccl-publication/raw-world-size-2.json": {
+      "sha256": "fedcace2a5ed1d09274e996fc09e0d6595dc2e34bfcbaefc939fde9555be0ffe"
+    },
+    "artifacts/nccl-publication/raw-world-size-4.json": {
+      "sha256": "248b0b425551d8f407d3cb54b9a12d64a5b88a39da8e7fef458f53a37fe27514"
     }
   }
 }

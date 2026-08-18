@@ -1,21 +1,22 @@
 ---
-title: "Five ways to parallelize transformer training"
+title: "Calibrating GPU collective models for parallelism planning"
 thumbnail: /blog/assets/five-parallelism-strategies/thumbnail.png
 authors:
 - user: kotlarmilos
 ---
 
-# Five ways to parallelize transformer training
+# Calibrating GPU collective models for parallelism planning
 
 ## TL;DR
 
-My gpt2-nano model is small enough to train on one Apple Silicon device. That makes
-it a useful model for understanding parallel training. The shapes are real and easy
-to inspect, while every distributed result in this project can be kept separate from
-claims about hardware that I do not have. This project derives and simulates five
-orthogonal ways to split transformer training across devices. They are data
-parallelism with ZeRO, tensor parallelism, context parallelism, pipeline
-parallelism, and expert parallelism.
+My gpt2-nano model is small enough to make parallel training assumptions
+inspectable. This project derives five parallelism axes, then tests a narrower
+question on four RTX 4090 GPUs. Can one shared bandwidth and latency model predict
+all of the collectives used by those strategies? It cannot. Primitive-specific
+models reduce held-out mean relative error from `22.91%` to `10.87%`. A
+communication-only planner then selects the measured winner in `7` of `8` held-out
+scenarios. This is collective microbenchmark evidence, not end-to-end distributed
+training evidence.
 
 ## The problem
 
@@ -140,11 +141,13 @@ with their coverage proofs live in `src/gpt2_nano_parallel/partitions.py`. The G
 schedule simulator lives in `src/gpt2_nano_parallel/pipeline.py`, and the expert
 routing simulator lives in `src/gpt2_nano_parallel/expert.py`. The command line
 entry point is `src/gpt2_nano_parallel/cli.py`, and the optional real all-reduce
-demo is `src/gpt2_nano_parallel/cpu_demo.py`. The tests reconstruct the original
-matrix from every partition, check exact sequence coverage, and verify that every
-forward and backward pipeline task occurs once with the correct dependency
-direction. `LEARNING.md` derives each formula from first principles with line
-references and labels every value as analytical or simulated.
+demo is `src/gpt2_nano_parallel/cpu_demo.py`.
+`src/gpt2_nano_parallel/gpu_collectives.py` measures NCCL primitives and keeps
+calibration sizes separate from held-out sizes.
+`src/gpt2_nano_parallel/topology_planner.py` fits the models and evaluates declared
+collective compositions. The tests reconstruct every partition, verify exact
+sequence coverage, check each pipeline dependency, and recompute every published
+NCCL result from hash-bound raw measurements.
 
 ## Results and honesty boundary
 
@@ -157,10 +160,11 @@ deterministic toy gate matches a trained router.
 
 The optional PyTorch demo launches local CPU processes with Gloo and performs a
 real scalar all-reduce. Its elapsed time is a local measurement of that run. It is
-not evidence for GPU speed or multi-node scaling. No multi-GPU run was available for
-this release candidate. The manifest marks that evidence as pending. This boundary
-is deliberate. Parallel training is already difficult to reason about without mixing
-a clean formula, a simulated schedule, and a hardware benchmark into the same claim.
+not evidence for GPU speed or multi-node scaling. The NCCL study is separate
+single-node multi-GPU evidence. This boundary is deliberate. Parallel training is
+already difficult to reason about without mixing a clean formula, a simulated
+schedule, a collective microbenchmark, and an end-to-end training benchmark into
+the same claim.
 
 Extension result. `gpt2-parallel-allreduce` now runs a real local CPU Gloo sweep for
 world sizes `2`, `4`, and `8` and writes
@@ -175,6 +179,34 @@ relative error. This is a mixed result rather than a confirmation. It validates 
 measurement harness and shows that local CPU Gloo does not follow one clean ring
 bandwidth plus latency model across the whole sweep. It still does not measure GPU
 or multi-node scaling.
+
+Publication extension. The NCCL study measures `80` rows across world sizes `2`
+and `4`, five primitives, and eight message sizes. Four sizes calibrate each model
+and four disjoint sizes evaluate it. The host contains four RTX 4090 GPUs in one
+NUMA domain. Its recorded topology exposes `NODE` and `PHB` PCIe paths and no
+NVLink path.
+
+One shared ring model reaches `22.91%` mean absolute relative error over the `40`
+held-out rows. Fitting one effective bandwidth and latency pair per primitive and
+world size lowers that error to `10.87%`. The fitted effective bandwidths range
+from `2.65` to `4.52 GiB/s`, while fitted latency ranges from `4.48` to
+`72.45 microseconds`. Those constants describe this host and this harness. They
+are not hardware specifications.
+
+The communication-only planner maps data parallelism, ZeRO-2, tensor parallelism,
+context parallelism, pipeline parallelism, and expert parallelism to explicit
+collective signatures. Its predicted winner matches the measured composition in
+`7` of `8` scenarios. It misses the world-size `4`, `16 KiB` case by choosing data
+parallelism when the measured winner is the context-parallel all-gather proxy.
+Every other scenario selects the same winner as the composed held-out
+measurements.
+
+This result supports a narrow claim. Collective type and world size matter enough
+that one shared model loses substantial predictive accuracy on this topology.
+The planner does not include model compute, communication overlap, optimizer
+execution, memory pressure, kernel fusion, convergence, or a full pipeline or ring
+attention implementation. It cannot identify the best end-to-end training
+strategy.
 
 Expected publication locations, not yet live:
 

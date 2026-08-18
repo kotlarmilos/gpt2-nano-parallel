@@ -1,0 +1,2937 @@
+{
+  "schema_version": "nccl-topology-study-v1",
+  "status": "measured",
+  "evidence": "measured",
+  "scope": "single-node NCCL collective calibration with held-out message sizes and a communication-only strategy planner",
+  "created_at": "2026-08-18T22:11:39.727431+00:00",
+  "command": "python -m gpt2_nano_parallel.gpu_collectives analyze configs/nccl_publication.toml ../gpt2-nano-parallel-nccl-run/raw-world-size-2.json ../gpt2-nano-parallel-nccl-run/raw-world-size-4.json --output ../gpt2-nano-parallel-nccl-run/results.json",
+  "config_path": "configs/nccl_publication.toml",
+  "config_sha256": "9586d8a0d19339da9259c33bf419d0ad23e59c5cbe5209a478fcc83ee8eca507",
+  "source": {
+    "git_revision": "2b58542cd4d3eb8cbfbbaeb6bb98f60ee7fc03f3",
+    "git_dirty": false,
+    "git_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git_state_captured": "study_start"
+  },
+  "measurement_source_revision": "2b58542cd4d3eb8cbfbbaeb6bb98f60ee7fc03f3",
+  "raw_artifacts": [
+    {
+      "path": "raw-world-size-2.json",
+      "sha256": "fedcace2a5ed1d09274e996fc09e0d6595dc2e34bfcbaefc939fde9555be0ffe",
+      "world_size": 2,
+      "environment": {
+        "backend": "nccl",
+        "device": "cuda",
+        "world_size": 2,
+        "torch": "2.4.1+cu124",
+        "cuda": "12.4",
+        "nccl": "2.20.5",
+        "python": "3.11.10",
+        "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+        "hostname": "2e7a1ee5f92a",
+        "gpu_names": [
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA GeForce RTX 4090"
+        ],
+        "topology": "\u001b[4mGPU0\tGPU1\tGPU2\tGPU3\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tNODE\tNODE\tNODE\t0-127\t0\t\tN/A\nGPU1\tNODE\t X \tPHB\tNODE\t0-127\t0\t\tN/A\nGPU2\tNODE\tPHB\t X \tNODE\t0-127\t0\t\tN/A\nGPU3\tNODE\tNODE\tNODE\t X \t0-127\t0\t\tN/A\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks"
+      }
+    },
+    {
+      "path": "raw-world-size-4.json",
+      "sha256": "248b0b425551d8f407d3cb54b9a12d64a5b88a39da8e7fef458f53a37fe27514",
+      "world_size": 4,
+      "environment": {
+        "backend": "nccl",
+        "device": "cuda",
+        "world_size": 4,
+        "torch": "2.4.1+cu124",
+        "cuda": "12.4",
+        "nccl": "2.20.5",
+        "python": "3.11.10",
+        "platform": "Linux-6.8.0-136-generic-x86_64-with-glibc2.35",
+        "hostname": "2e7a1ee5f92a",
+        "gpu_names": [
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA GeForce RTX 4090",
+          "NVIDIA GeForce RTX 4090"
+        ],
+        "topology": "\u001b[4mGPU0\tGPU1\tGPU2\tGPU3\tCPU Affinity\tNUMA Affinity\tGPU NUMA ID\u001b[0m\nGPU0\t X \tNODE\tNODE\tNODE\t0-127\t0\t\tN/A\nGPU1\tNODE\t X \tPHB\tNODE\t0-127\t0\t\tN/A\nGPU2\tNODE\tPHB\t X \tNODE\t0-127\t0\t\tN/A\nGPU3\tNODE\tNODE\tNODE\t X \t0-127\t0\t\tN/A\n\nLegend:\n\n  X    = Self\n  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)\n  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node\n  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)\n  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)\n  PIX  = Connection traversing at most a single PCIe bridge\n  NV#  = Connection traversing a bonded set of # NVLinks"
+      }
+    }
+  ],
+  "splits": {
+    "calibration_message_bytes": [
+      4096,
+      65536,
+      1048576,
+      16777216
+    ],
+    "validation_message_bytes": [
+      16384,
+      262144,
+      4194304,
+      67108864
+    ],
+    "overlap": false
+  },
+  "collective_models": {
+    "all_gather:world_size=2": {
+      "operation": "all_gather",
+      "world_size": 2,
+      "bandwidth_bytes_per_second": 4068744150.554169,
+      "bandwidth_gib_per_second": 3.789313277745777,
+      "latency_seconds": 5.180259592341867e-05,
+      "latency_microseconds": 51.802595923418664,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 4.016028760664783e-12
+    },
+    "all_gather:world_size=4": {
+      "operation": "all_gather",
+      "world_size": 4,
+      "bandwidth_bytes_per_second": 3312678403.3902464,
+      "bandwidth_gib_per_second": 3.085172179518497,
+      "latency_seconds": 1.0992808248255348e-05,
+      "latency_microseconds": 10.992808248255347,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 1.9506301979588135e-09
+    },
+    "all_reduce:world_size=2": {
+      "operation": "all_reduce",
+      "world_size": 2,
+      "bandwidth_bytes_per_second": 4852654459.891313,
+      "bandwidth_gib_per_second": 4.519386645305262,
+      "latency_seconds": 3.270182521439016e-05,
+      "latency_microseconds": 32.70182521439016,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 3.5981903155773653e-10
+    },
+    "all_reduce:world_size=4": {
+      "operation": "all_reduce",
+      "world_size": 4,
+      "bandwidth_bytes_per_second": 3428598073.0016937,
+      "bandwidth_gib_per_second": 3.1931307846696058,
+      "latency_seconds": 4.480535959937669e-06,
+      "latency_microseconds": 4.4805359599376695,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 9.896417746657836e-09
+    },
+    "all_to_all:world_size=2": {
+      "operation": "all_to_all",
+      "world_size": 2,
+      "bandwidth_bytes_per_second": 4141744618.217631,
+      "bandwidth_gib_per_second": 3.857300261238246,
+      "latency_seconds": 5.4562031409593544e-05,
+      "latency_microseconds": 54.562031409593544,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 1.6472632063599674e-10
+    },
+    "all_to_all:world_size=4": {
+      "operation": "all_to_all",
+      "world_size": 4,
+      "bandwidth_bytes_per_second": 2843945406.2052727,
+      "bandwidth_gib_per_second": 2.6486305577729574,
+      "latency_seconds": 1.8808466606342804e-05,
+      "latency_microseconds": 18.808466606342805,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 1.1574954281095878e-09
+    },
+    "neighbor_exchange:world_size=2": {
+      "operation": "neighbor_exchange",
+      "world_size": 2,
+      "bandwidth_bytes_per_second": 3864781686.578615,
+      "bandwidth_gib_per_second": 3.5993584306711472,
+      "latency_seconds": 7.245276323064945e-05,
+      "latency_microseconds": 72.45276323064945,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 5.716172945933393e-10
+    },
+    "neighbor_exchange:world_size=4": {
+      "operation": "neighbor_exchange",
+      "world_size": 4,
+      "bandwidth_bytes_per_second": 2971986952.760235,
+      "bandwidth_gib_per_second": 2.7678785405682724,
+      "latency_seconds": 6.260586345942335e-05,
+      "latency_microseconds": 62.60586345942335,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 5.404897746919152e-10
+    },
+    "reduce_scatter:world_size=2": {
+      "operation": "reduce_scatter",
+      "world_size": 2,
+      "bandwidth_bytes_per_second": 3129420673.7946267,
+      "bandwidth_gib_per_second": 2.9145001189733173,
+      "latency_seconds": 3.640701618386137e-05,
+      "latency_microseconds": 36.40701618386137,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 1.4818007170195528e-09
+    },
+    "reduce_scatter:world_size=4": {
+      "operation": "reduce_scatter",
+      "world_size": 4,
+      "bandwidth_bytes_per_second": 3313062224.272109,
+      "bandwidth_gib_per_second": 3.0855296405703845,
+      "latency_seconds": 1.1601122440702108e-05,
+      "latency_microseconds": 11.601122440702108,
+      "fit_points": 4,
+      "method": "least_squares",
+      "sum_squared_error": 3.547529777945857e-09
+    }
+  },
+  "shared_ring_model": {
+    "scope": "one operation-agnostic model across every collective and world size",
+    "bandwidth_bytes_per_second": 3502670058.76855,
+    "bandwidth_gib_per_second": 3.2621156971608753,
+    "latency_seconds": 2.044959441501166e-05,
+    "latency_microseconds": 20.44959441501166,
+    "fit_points": 40,
+    "method": "least_squares",
+    "sum_squared_error": 3.799790831673571e-06
+  },
+  "held_out": {
+    "collective_specific_error": {
+      "count": 40,
+      "mean_absolute_relative_error": 0.1086538193879513,
+      "max_absolute_relative_error": 0.6155920941386677,
+      "root_mean_squared_relative_error": 0.1664354178602503
+    },
+    "shared_ring_error": {
+      "count": 40,
+      "mean_absolute_relative_error": 0.2290635640495112,
+      "max_absolute_relative_error": 0.7132230290566015,
+      "root_mean_squared_relative_error": 0.3011111378647251
+    },
+    "comparisons": [
+      {
+        "operation": "all_gather",
+        "world_size": 2,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 5.4686400108039376e-05,
+        "median_seconds": 5.340800061821938e-05,
+        "min_seconds": 5.119999870657921e-05,
+        "max_seconds": 6.191999837756157e-05,
+        "samples_seconds": [
+          5.529600009322166e-05,
+          5.888000130653381e-05,
+          5.2512001246213915e-05,
+          5.8816000819206235e-05,
+          5.119999870657921e-05,
+          5.222399905323982e-05,
+          5.292800068855286e-05,
+          5.171199887990952e-05,
+          5.337600037455559e-05,
+          5.161599814891815e-05,
+          5.2480001002550127e-05,
+          5.209600180387497e-05,
+          5.3440000861883166e-05,
+          6.0256000608205794e-05,
+          6.191999837756157e-05,
+          5.632000043988228e-05,
+          5.622399970889091e-05,
+          5.676800012588501e-05,
+          5.1295999437570575e-05,
+          5.436800047755242e-05
+        ],
+        "rank_mean_seconds": [
+          5.275039989501238e-05,
+          5.353440009057522e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 5.3815993595249234e-05,
+        "collective_model_relative_error": 0.015916324919368476,
+        "shared_model_seconds": 2.27883816437694e-05,
+        "shared_model_relative_error": 0.5832897832230995
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 2,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 9.009120054543019e-05,
+        "median_seconds": 8.607999980449676e-05,
+        "min_seconds": 7.472000271081924e-05,
+        "max_seconds": 0.00017875200510025023,
+        "samples_seconds": [
+          9.267199784517288e-05,
+          9.046400338411331e-05,
+          8.326400071382522e-05,
+          8.259200304746628e-05,
+          8.1216000020504e-05,
+          9.151999652385711e-05,
+          9.990400075912476e-05,
+          9.087999910116196e-05,
+          9.030400216579437e-05,
+          9.705600142478943e-05,
+          8.959999680519104e-05,
+          8.88959988951683e-05,
+          0.00017875200510025023,
+          7.98719972372055e-05,
+          8.140800148248673e-05,
+          7.571200281381607e-05,
+          7.472000271081924e-05,
+          7.568000257015228e-05,
+          8.198399841785431e-05,
+          7.532799988985061e-05
+        ],
+        "rank_mean_seconds": [
+          8.773120082914829e-05,
+          8.659359999001026e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 8.401695867270772e-05,
+        "collective_model_relative_error": 0.06742325372453453,
+        "shared_model_seconds": 5.787019007513547e-05,
+        "shared_model_relative_error": 0.35764880782165476
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 2,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.000562663996219635,
+        "median_seconds": 0.0005619359910488128,
+        "min_seconds": 0.0005566719770431519,
+        "max_seconds": 0.0005693439841270447,
+        "samples_seconds": [
+          0.0005619199872016906,
+          0.000565887987613678,
+          0.0005596479773521423,
+          0.0005612480044364929,
+          0.0005625600218772889,
+          0.0005693439841270447,
+          0.0005626239776611328,
+          0.000558463990688324,
+          0.0005691519975662231,
+          0.0005566719770431519,
+          0.0005686079859733581,
+          0.0005632960200309754,
+          0.0005612800121307373,
+          0.0005617600083351135,
+          0.000567359983921051,
+          0.0005624639987945557,
+          0.000561951994895935,
+          0.0005602560043334961,
+          0.000557695984840393,
+          0.0005610880255699158
+        ],
+        "rank_mean_seconds": [
+          0.0005620207965373993,
+          0.000557809603214264
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0005672323999120437,
+        "collective_model_relative_error": 0.00811923940949187,
+        "shared_model_seconds": 0.0006191791249769926,
+        "shared_model_relative_error": 0.10044205624860521
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 2,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.008340027236938477,
+        "median_seconds": 0.008321151733398438,
+        "min_seconds": 0.008275872230529785,
+        "max_seconds": 0.00873084831237793,
+        "samples_seconds": [
+          0.008302687644958496,
+          0.008314304351806641,
+          0.008275872230529785,
+          0.008333184242248536,
+          0.008332415580749512,
+          0.008307392120361329,
+          0.008316896438598632,
+          0.008322431564331054,
+          0.008300607681274413,
+          0.008294015884399415,
+          0.008339584350585938,
+          0.00834182357788086,
+          0.008314304351806641,
+          0.00831987190246582,
+          0.00830668830871582,
+          0.008347264289855957,
+          0.008331040382385253,
+          0.008338111877441406,
+          0.00873084831237793,
+          0.008331199645996094
+        ],
+        "rank_mean_seconds": [
+          0.008325990533828735,
+          0.008301779222488403
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.008298679459741418,
+        "collective_model_relative_error": 0.0049577508588853625,
+        "shared_model_seconds": 0.009600122083406708,
+        "shared_model_relative_error": 0.1510900157360632
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 2,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 6.314720027148723e-05,
+        "median_seconds": 6.116800010204315e-05,
+        "min_seconds": 5.939200147986412e-05,
+        "max_seconds": 7.065600156784058e-05,
+        "samples_seconds": [
+          6.963200122117996e-05,
+          6.963200122117996e-05,
+          6.246399879455566e-05,
+          7.065600156784058e-05,
+          6.169600039720535e-05,
+          6.45119994878769e-05,
+          6.34239986538887e-05,
+          5.9487998485565186e-05,
+          6.649599969387054e-05,
+          5.9487998485565186e-05,
+          6.860800087451935e-05,
+          6.0416001826524736e-05,
+          6.060799956321716e-05,
+          6.0416001826524736e-05,
+          6.063999980688095e-05,
+          5.967999994754791e-05,
+          6.0416001826524736e-05,
+          5.939200147986412e-05,
+          6.569600105285644e-05,
+          5.958399921655655e-05
+        ],
+        "rank_mean_seconds": [
+          6.146240048110485e-05,
+          6.143200024962425e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 6.877994687342084e-05,
+        "collective_model_relative_error": 0.08920025872432796,
+        "shared_model_seconds": 4.55767632875388e-05,
+        "shared_model_relative_error": 0.2782457006551087
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 2,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.00011194720044732094,
+        "median_seconds": 0.00011264000087976456,
+        "min_seconds": 0.00010447999835014343,
+        "max_seconds": 0.0001186240017414093,
+        "samples_seconds": [
+          0.00010569600015878677,
+          0.00010956799983978272,
+          0.00011673600226640701,
+          0.00011366400122642517,
+          0.00011264000087976456,
+          0.00011059200018644332,
+          0.0001085439994931221,
+          0.00011468800157308579,
+          0.00010755199939012528,
+          0.00011264000087976456,
+          0.00011590400338172912,
+          0.00011027199774980545,
+          0.0001085439994931221,
+          0.00011481600254774094,
+          0.00010447999835014343,
+          0.00010943999886512757,
+          0.0001143679991364479,
+          0.00011343999952077865,
+          0.00011673600226640701,
+          0.0001186240017414093
+        ],
+        "rank_mean_seconds": [
+          0.00011007679998874664,
+          0.000109884799644351
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.00011942439354302862,
+        "collective_model_relative_error": 0.06679214009667205,
+        "shared_model_seconds": 0.00011574038015027094,
+        "shared_model_relative_error": 0.03388364950434788
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 2,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0010837408006191254,
+        "median_seconds": 0.000983920007944107,
+        "min_seconds": 0.0009274880290031433,
+        "max_seconds": 0.0012943359613418579,
+        "samples_seconds": [
+          0.0009604480266571045,
+          0.0009370560050010682,
+          0.0009573119878768921,
+          0.0009274880290031433,
+          0.0009891840219497681,
+          0.0009698240160942078,
+          0.000978655993938446,
+          0.0009544320106506347,
+          0.0009366719722747802,
+          0.0009492480158805847,
+          0.0009440320134162902,
+          0.0012943359613418579,
+          0.0012799999713897705,
+          0.0012247040271759033,
+          0.0012185599803924562,
+          0.0012431360483169556,
+          0.0012206079959869384,
+          0.0012806719541549683,
+          0.0012083200216293334,
+          0.0012001279592514038
+        ],
+        "rank_mean_seconds": [
+          0.0010798991948366165,
+          0.0010693376004695893
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0009297355402567533,
+        "collective_model_relative_error": 0.1421052527268431,
+        "shared_model_seconds": 0.0012383582499539852,
+        "shared_model_relative_error": 0.14267013777328408
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 2,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.01491869764328003,
+        "median_seconds": 0.013868879795074463,
+        "min_seconds": 0.013637503623962403,
+        "max_seconds": 0.017781408309936523,
+        "samples_seconds": [
+          0.013675519943237305,
+          0.013937664031982423,
+          0.013766655921936035,
+          0.015184736251831055,
+          0.013707263946533203,
+          0.013931520462036133,
+          0.013838335990905762,
+          0.013691904067993164,
+          0.013899423599243165,
+          0.013703167915344238,
+          0.015940256118774414,
+          0.017619775772094726,
+          0.01773174476623535,
+          0.017781408309936523,
+          0.017768447875976562,
+          0.017477632522583008,
+          0.013694815635681153,
+          0.013649215698242187,
+          0.013637503623962403,
+          0.013736960411071777
+        ],
+        "rank_mean_seconds": [
+          0.014852641582489013,
+          0.014878079986572266
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.013894713887676349,
+        "collective_model_relative_error": 0.06863761033892418,
+        "shared_model_seconds": 0.019200244166813416,
+        "shared_model_relative_error": 0.2869919765055339
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 2,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 5.95456000417471e-05,
+        "median_seconds": 5.724800005555153e-05,
+        "min_seconds": 5.5872000753879547e-05,
+        "max_seconds": 6.995200365781785e-05,
+        "samples_seconds": [
+          6.188800185918808e-05,
+          6.217600032687187e-05,
+          5.8527998626232146e-05,
+          6.966400146484375e-05,
+          5.8527998626232146e-05,
+          5.670399963855743e-05,
+          5.8848001062870023e-05,
+          5.5872000753879547e-05,
+          5.68000003695488e-05,
+          5.651199817657471e-05,
+          6.995200365781785e-05,
+          5.689600110054016e-05,
+          5.651199817657471e-05,
+          5.65439984202385e-05,
+          5.6384000927209855e-05,
+          5.7151999324560164e-05,
+          5.65439984202385e-05,
+          6.425599753856659e-05,
+          6.380800157785416e-05,
+          5.7344000786542894e-05
+        ],
+        "rank_mean_seconds": [
+          5.860159993171692e-05,
+          5.824639983475208e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 5.653994186886405e-05,
+        "collective_model_relative_error": 0.05047657880306513,
+        "shared_model_seconds": 2.27883816437694e-05,
+        "shared_model_relative_error": 0.6172952891936164
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 2,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 8.326880000531673e-05,
+        "median_seconds": 8.30559991300106e-05,
+        "min_seconds": 7.449600100517272e-05,
+        "max_seconds": 9.161599725484848e-05,
+        "samples_seconds": [
+          7.900799810886383e-05,
+          9.136000275611877e-05,
+          9.161599725484848e-05,
+          8.329600095748901e-05,
+          8.256000280380249e-05,
+          8.28159973025322e-05,
+          8.441600203514099e-05,
+          7.727999985218048e-05,
+          7.532799988985061e-05,
+          8.214399963617325e-05,
+          7.859200239181519e-05,
+          7.449600100517272e-05,
+          7.599999755620957e-05,
+          7.599999755620957e-05,
+          8.566399663686753e-05,
+          8.803199976682663e-05,
+          9.027200192213058e-05,
+          9.043200314044952e-05,
+          8.4927998483181e-05,
+          9.113600105047225e-05
+        ],
+        "rank_mean_seconds": [
+          7.85776000469923e-05,
+          7.764159962534905e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 8.620859875792171e-05,
+        "collective_model_relative_error": 0.03530492516305361,
+        "shared_model_seconds": 5.787019007513547e-05,
+        "shared_model_relative_error": 0.30501952626385337
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 2,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0005542192071676254,
+        "median_seconds": 0.0005342079997062684,
+        "min_seconds": 0.0005135040283203125,
+        "max_seconds": 0.0007589759826660157,
+        "samples_seconds": [
+          0.0005340800285339356,
+          0.0005252479910850525,
+          0.000534175992012024,
+          0.0005379199981689453,
+          0.0005225279927253723,
+          0.0005135040283203125,
+          0.0005451840162277222,
+          0.0005389440059661865,
+          0.000532800018787384,
+          0.0007268800139427185,
+          0.0007589759826660157,
+          0.0005370240211486816,
+          0.0005260800123214721,
+          0.000531391978263855,
+          0.0005342400074005127,
+          0.0005459840297698975,
+          0.0005241919755935669,
+          0.0005250880122184753,
+          0.0005360640287399292,
+          0.0005540800094604492
+        ],
+        "rank_mean_seconds": [
+          0.0005514624029397964,
+          0.0005469072073698044
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0005609071089828443,
+        "collective_model_relative_error": 0.01206725015792549,
+        "shared_model_seconds": 0.0006191791249769926,
+        "shared_model_relative_error": 0.11720979166591725
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 2,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.009346433544158936,
+        "median_seconds": 0.008907264232635497,
+        "min_seconds": 0.008746879577636719,
+        "max_seconds": 0.011682527542114258,
+        "samples_seconds": [
+          0.011682527542114258,
+          0.011612031936645508,
+          0.011617376327514648,
+          0.00980998420715332,
+          0.008826751708984375,
+          0.008948672294616699,
+          0.008857119560241699,
+          0.008899968147277832,
+          0.008962047576904298,
+          0.00877462387084961,
+          0.008852416038513184,
+          0.008914560317993163,
+          0.008820256233215333,
+          0.008852543830871583,
+          0.008983519554138184,
+          0.008850208282470703,
+          0.008798975944519043,
+          0.008746879577636719,
+          0.009173151969909667,
+          0.008945055961608887
+        ],
+        "rank_mean_seconds": [
+          0.009341447925567627,
+          0.009339590311050415
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.008156083272581605,
+        "collective_model_relative_error": 0.1273587690912586,
+        "shared_model_seconds": 0.009600122083406708,
+        "shared_model_relative_error": 0.0271428174232635
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 2,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 8.761920034885406e-05,
+        "median_seconds": 8.59839990735054e-05,
+        "min_seconds": 8.444800227880478e-05,
+        "max_seconds": 9.654399752616882e-05,
+        "samples_seconds": [
+          9.20640006661415e-05,
+          8.748800307512284e-05,
+          9.459199756383896e-05,
+          8.755200356245042e-05,
+          9.036800265312194e-05,
+          8.601599931716918e-05,
+          8.595199882984161e-05,
+          8.630400151014328e-05,
+          8.707199990749359e-05,
+          8.51840004324913e-05,
+          8.537600189447403e-05,
+          8.470399677753449e-05,
+          8.524800091981888e-05,
+          9.654399752616882e-05,
+          8.566399663686753e-05,
+          8.54720026254654e-05,
+          8.476799726486206e-05,
+          8.444800227880478e-05,
+          9.244800359010696e-05,
+          8.511999994516372e-05
+        ],
+        "rank_mean_seconds": [
+          8.700959980487823e-05,
+          8.720640018582344e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 7.669207125078869e-05,
+        "collective_model_relative_error": 0.12471158210254402,
+        "shared_model_seconds": 2.512716887252714e-05,
+        "shared_model_relative_error": 0.7132230290566015
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 2,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.00014089439809322358,
+        "median_seconds": 0.00013899199664592745,
+        "min_seconds": 0.0001356479972600937,
+        "max_seconds": 0.0001472959965467453,
+        "samples_seconds": [
+          0.00014188799262046813,
+          0.00013817599415779115,
+          0.0001472959965467453,
+          0.0001467200070619583,
+          0.00014630399644374848,
+          0.00013894400000572204,
+          0.00013654400408267975,
+          0.00013782399892807006,
+          0.00013779200613498689,
+          0.00013740800321102142,
+          0.0001374399960041046,
+          0.00013903999328613282,
+          0.00013638399541378022,
+          0.0001449279934167862,
+          0.00013843199610710143,
+          0.00014102399349212645,
+          0.00014483200013637543,
+          0.0001356479972600937,
+          0.00014470399916172028,
+          0.00014655999839305878
+        ],
+        "rank_mean_seconds": [
+          0.00013714720010757445,
+          0.00013622079938650132
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.00014028169155287738,
+        "collective_model_relative_error": 0.0043486934089516285,
+        "shared_model_seconds": 9.529078573525928e-05,
+        "shared_model_relative_error": 0.32367228914090973
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 2,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.001026095998287201,
+        "median_seconds": 0.0010223839879035948,
+        "min_seconds": 0.0010038399696350097,
+        "max_seconds": 0.0010508160591125488,
+        "samples_seconds": [
+          0.0010344959497451782,
+          0.0010108480453491211,
+          0.0010508160591125488,
+          0.0010286400318145752,
+          0.0010104639530181885,
+          0.0010131839513778686,
+          0.0010219839811325072,
+          0.0010163520574569703,
+          0.0010192960500717164,
+          0.001043328046798706,
+          0.0010206079483032226,
+          0.0010179200172424317,
+          0.0010038399696350097,
+          0.0010427839756011962,
+          0.001037727952003479,
+          0.0010318399667739867,
+          0.0010292479991912842,
+          0.0010167360305786133,
+          0.0010227839946746827,
+          0.001049023985862732
+        ],
+        "rank_mean_seconds": [
+          0.0010193823963403701,
+          0.001011721596121788
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.001157715616386296,
+        "collective_model_relative_error": 0.12827222630124235,
+        "shared_model_seconds": 0.0012179086555389735,
+        "shared_model_relative_error": 0.18693441702526234
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 2,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.022104222297668456,
+        "median_seconds": 0.023596863746643066,
+        "min_seconds": 0.017950624465942384,
+        "max_seconds": 0.023923135757446288,
+        "samples_seconds": [
+          0.017950624465942384,
+          0.018011072158813476,
+          0.018012832641601563,
+          0.017987327575683595,
+          0.01796892738342285,
+          0.02068351936340332,
+          0.023524192810058592,
+          0.02383395195007324,
+          0.023620384216308594,
+          0.023785152435302735,
+          0.023633663177490234,
+          0.023923135757446288,
+          0.023557567596435548,
+          0.023580127716064454,
+          0.02364975929260254,
+          0.023656288146972657,
+          0.02361359977722168,
+          0.023549055099487303,
+          0.02379251289367676,
+          0.02375075149536133
+        ],
+        "rank_mean_seconds": [
+          0.022098905658721923,
+          0.022096747303009034
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.017436658413720996,
+        "collective_model_relative_error": 0.21116164238177212,
+        "shared_model_seconds": 0.019179794572398403,
+        "shared_model_relative_error": 0.13230176958447076
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 2,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 5.562399998307228e-05,
+        "median_seconds": 5.529600009322166e-05,
+        "min_seconds": 5.3504001349210736e-05,
+        "max_seconds": 6.246399879455566e-05,
+        "samples_seconds": [
+          5.756799876689911e-05,
+          5.632000043988228e-05,
+          5.529600009322166e-05,
+          5.6352000683546066e-05,
+          5.532800033688545e-05,
+          5.603199824690819e-05,
+          5.5615998804569246e-05,
+          5.433600023388863e-05,
+          5.452800169587135e-05,
+          5.529600009322166e-05,
+          5.427199974656105e-05,
+          5.558399856090546e-05,
+          5.529600009322166e-05,
+          5.452800169587135e-05,
+          5.500800162553787e-05,
+          5.529600009322166e-05,
+          5.455999821424484e-05,
+          6.246399879455566e-05,
+          5.529600009322166e-05,
+          5.3504001349210736e-05
+        ],
+        "rank_mean_seconds": [
+          5.5083199962973596e-05,
+          5.547680016607046e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 3.902475309235654e-05,
+        "collective_model_relative_error": 0.29841879217185546,
+        "shared_model_seconds": 2.27883816437694e-05,
+        "shared_model_relative_error": 0.5903138636073555
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 2,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 7.408000193536281e-05,
+        "median_seconds": 7.372800260782241e-05,
+        "min_seconds": 7.16800019145012e-05,
+        "max_seconds": 7.782399654388428e-05,
+        "samples_seconds": [
+          7.577600330114365e-05,
+          7.782399654388428e-05,
+          7.475200295448303e-05,
+          7.459200173616409e-05,
+          7.372800260782241e-05,
+          7.16800019145012e-05,
+          7.577600330114365e-05,
+          7.27040022611618e-05,
+          7.372800260782241e-05,
+          7.372800260782241e-05,
+          7.360000163316726e-05,
+          7.27040022611618e-05,
+          7.27040022611618e-05,
+          7.369600236415863e-05,
+          7.494399696588516e-05,
+          7.372800260782241e-05,
+          7.475200295448303e-05,
+          7.372800260782241e-05,
+          7.372800260782241e-05,
+          7.372800260782241e-05
+        ],
+        "rank_mean_seconds": [
+          7.370720244944095e-05,
+          7.346720136702061e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 7.8290806719784e-05,
+        "collective_model_relative_error": 0.056841315799306506,
+        "shared_model_seconds": 5.787019007513547e-05,
+        "shared_model_relative_error": 0.21881494920006786
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 2,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0005575999945402146,
+        "median_seconds": 0.0005569280087947845,
+        "min_seconds": 0.0005519359707832337,
+        "max_seconds": 0.0005643839836120605,
+        "samples_seconds": [
+          0.0005609599947929382,
+          0.0005591040253639222,
+          0.0005536959767341614,
+          0.0005568000078201294,
+          0.0005568640232086182,
+          0.0005549439787864686,
+          0.00055622398853302,
+          0.0005600640177726746,
+          0.0005519359707832337,
+          0.0005643839836120605,
+          0.0005594879984855652,
+          0.0005529599785804749,
+          0.0005562559962272644,
+          0.0005569919943809509,
+          0.0005642240047454834,
+          0.0005557439923286438,
+          0.0005519359707832337,
+          0.0005601279735565186,
+          0.0005571200251579285,
+          0.000562175989151001
+        ],
+        "rank_mean_seconds": [
+          0.0005565855950117111,
+          0.0005542495995759964
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0007065476647586234,
+        "collective_model_relative_error": 0.26712279712489595,
+        "shared_model_seconds": 0.0006191791249769926,
+        "shared_model_relative_error": 0.1104360312764258
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 2,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.008582895994186402,
+        "median_seconds": 0.008345391750335693,
+        "min_seconds": 0.00832307243347168,
+        "max_seconds": 0.010686112403869628,
+        "samples_seconds": [
+          0.008346207618713379,
+          0.00832921600341797,
+          0.008365056037902833,
+          0.00832307243347168,
+          0.008343615531921388,
+          0.008327168464660644,
+          0.008336383819580078,
+          0.009636608123779297,
+          0.010686112403869628,
+          0.009484288215637206,
+          0.008368127822875977,
+          0.008325119972229005,
+          0.008343551635742187,
+          0.008330240249633789,
+          0.008353695869445801,
+          0.008344160079956055,
+          0.008351743698120117,
+          0.008344575881958008,
+          0.008366335868835449,
+          0.00835264015197754
+        ],
+        "rank_mean_seconds": [
+          0.008574315214157104,
+          0.008568049621582032
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.010758657393380056,
+        "collective_model_relative_error": 0.25349968130423567,
+        "shared_model_seconds": 0.009600122083406708,
+        "shared_model_relative_error": 0.11851781612049371
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 4,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 5.628799982368946e-05,
+        "median_seconds": 5.5824000388383864e-05,
+        "min_seconds": 5.0847999751567844e-05,
+        "max_seconds": 6.723199784755707e-05,
+        "samples_seconds": [
+          6.723199784755707e-05,
+          5.7824000716209414e-05,
+          5.212799832224846e-05,
+          5.888000130653381e-05,
+          5.222399905323982e-05,
+          5.212799832224846e-05,
+          5.215999856591225e-05,
+          6.387200206518173e-05,
+          5.596800148487091e-05,
+          5.737600103020668e-05,
+          5.6159999221563336e-05,
+          5.567999929189682e-05,
+          5.5424001067876815e-05,
+          5.0847999751567844e-05,
+          6.239999830722809e-05,
+          5.171199887990952e-05,
+          5.7344000786542894e-05,
+          5.2064001560211184e-05,
+          6.243199855089187e-05,
+          5.190400034189224e-05
+        ],
+        "rank_mean_seconds": [
+          5.321280024945736e-05,
+          5.4323200322687625e-05,
+          5.324799977242946e-05,
+          5.3572800010442734e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 3.668780987174495e-05,
+        "collective_model_relative_error": 0.3482125855126858,
+        "shared_model_seconds": 6.485696408817159e-05,
+        "shared_model_relative_error": 0.15223430022958073
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 4,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 9.529599994421005e-05,
+        "median_seconds": 9.414400160312652e-05,
+        "min_seconds": 8.73280018568039e-05,
+        "max_seconds": 0.00010316800326108933,
+        "samples_seconds": [
+          9.647999703884124e-05,
+          0.00010316800326108933,
+          9.273599833250046e-05,
+          9.36959981918335e-05,
+          9.446399658918381e-05,
+          9.219200164079666e-05,
+          9.430400282144547e-05,
+          0.00010153599828481675,
+          9.436800330877304e-05,
+          9.324800223112106e-05,
+          9.331200271844864e-05,
+          9.398400038480758e-05,
+          0.00010233599692583084,
+          9.375999867916108e-05,
+          9.15519967675209e-05,
+          9.225600212812423e-05,
+          8.73280018568039e-05,
+          0.00010067199915647507,
+          9.558399766683578e-05,
+          9.894400089979172e-05
+        ],
+        "rank_mean_seconds": [
+          9.071359932422638e-05,
+          9.090079963207244e-05,
+          9.250560067594052e-05,
+          9.055199958384038e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 9.23285867764285e-05,
+        "collective_model_relative_error": 0.03113890582520555,
+        "shared_model_seconds": 0.0001174796767352207,
+        "shared_model_relative_error": 0.23278707190226058
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 4,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0009628832042217255,
+        "median_seconds": 0.0009634079933166504,
+        "min_seconds": 0.0009364479780197143,
+        "max_seconds": 0.0009800320267677306,
+        "samples_seconds": [
+          0.0009576640129089355,
+          0.0009497920274734497,
+          0.0009678720235824585,
+          0.000961184024810791,
+          0.00095551997423172,
+          0.0009607040286064148,
+          0.0009585919976234436,
+          0.0009527680277824402,
+          0.0009364479780197143,
+          0.0009580479860305786,
+          0.0009769279956817628,
+          0.0009647039771080017,
+          0.000962112009525299,
+          0.0009730240106582642,
+          0.0009714879989624023,
+          0.0009666240215301514,
+          0.0009650560021400451,
+          0.0009699199795722962,
+          0.0009691839814186097,
+          0.0009800320267677306
+        ],
+        "rank_mean_seconds": [
+          0.0007569680035114288,
+          0.0009608528077602387,
+          0.0009607200026512146,
+          0.0009398207992315292
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0009825810172513652,
+        "collective_model_relative_error": 0.020457115612023798,
+        "shared_model_seconds": 0.0009594430790880063,
+        "shared_model_relative_error": 0.0035727335554676864
+      },
+      {
+        "operation": "all_gather",
+        "world_size": 4,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.016152447986602782,
+        "median_seconds": 0.01535361623764038,
+        "min_seconds": 0.01522067165374756,
+        "max_seconds": 0.020041919708251952,
+        "samples_seconds": [
+          0.015371392250061035,
+          0.015380224227905274,
+          0.01571897602081299,
+          0.015370047569274903,
+          0.015315520286560058,
+          0.01529315185546875,
+          0.015357824325561523,
+          0.015274239540100097,
+          0.01566864013671875,
+          0.01522067165374756,
+          0.015285951614379883,
+          0.015349408149719239,
+          0.015224255561828614,
+          0.015253824234008789,
+          0.01530940818786621,
+          0.017909984588623046,
+          0.020041919708251952,
+          0.019982271194458008,
+          0.019493280410766603,
+          0.015227968215942383
+        ],
+        "rank_mean_seconds": [
+          0.014153159952163695,
+          0.01614220004081726,
+          0.016147137784957886,
+          0.015837337493896483
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.015226619904850355,
+        "collective_model_relative_error": 0.057318128033616404,
+        "shared_model_seconds": 0.014430857516732577,
+        "shared_model_relative_error": 0.10658387331122396
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 4,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 8.858080059289933e-05,
+        "median_seconds": 7.185599952936173e-05,
+        "min_seconds": 6.761600077152252e-05,
+        "max_seconds": 0.00039215999841690064,
+        "samples_seconds": [
+          7.98719972372055e-05,
+          7.203199714422226e-05,
+          7.16800019145012e-05,
+          7.782399654388428e-05,
+          6.963200122117996e-05,
+          6.947200000286102e-05,
+          6.892800331115723e-05,
+          0.00039215999841690064,
+          7.772800326347351e-05,
+          7.577600330114365e-05,
+          7.475200295448303e-05,
+          7.407999783754349e-05,
+          7.503999769687653e-05,
+          6.761600077152252e-05,
+          6.892800331115723e-05,
+          6.963200122117996e-05,
+          7.043199986219406e-05,
+          6.992000341415406e-05,
+          7.676800340414048e-05,
+          6.934399902820587e-05
+        ],
+        "rank_mean_seconds": [
+          8.488640077412129e-05,
+          6.977280080318452e-05,
+          7.039200067520142e-05,
+          7.019040063023567e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 3.40511600554367e-05,
+        "collective_model_relative_error": 0.6155920941386677,
+        "shared_model_seconds": 0.00012971392817634318,
+        "shared_model_relative_error": 0.46435714407780027
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 4,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.00015286720171570778,
+        "median_seconds": 0.0001528480052947998,
+        "min_seconds": 0.00014431999623775482,
+        "max_seconds": 0.00016672000288963317,
+        "samples_seconds": [
+          0.00015360000729560853,
+          0.00015328000485897064,
+          0.00015039999783039094,
+          0.00014745600521564483,
+          0.00014643199741840363,
+          0.00015455999970436096,
+          0.00015248000621795655,
+          0.0001502079963684082,
+          0.00014950400590896606,
+          0.0001544319987297058,
+          0.00015747199952602386,
+          0.00015568000078201294,
+          0.0001515520066022873,
+          0.00014431999623775482,
+          0.00015958400070667267,
+          0.00015241600573062897,
+          0.0001546880006790161,
+          0.00014934399724006654,
+          0.00015321600437164307,
+          0.00016672000288963317
+        ],
+        "rank_mean_seconds": [
+          0.00014835200160741806,
+          0.00015028320103883743,
+          0.00015082079991698266,
+          0.0001479472003877163
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.00014157032449259698,
+        "collective_model_relative_error": 0.07389994123212888,
+        "shared_model_seconds": 0.0002349593534704414,
+        "shared_model_relative_error": 0.5370161214006071
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 4,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0018321360051631926,
+        "median_seconds": 0.0018392640352249145,
+        "min_seconds": 0.0017827839851379393,
+        "max_seconds": 0.0018676799535751343,
+        "samples_seconds": [
+          0.0018534400463104247,
+          0.0018515199422836303,
+          0.0018442239761352539,
+          0.0017827839851379393,
+          0.0018391040563583373,
+          0.001823744058609009,
+          0.0018247679471969605,
+          0.0018297280073165893,
+          0.0018551360368728638,
+          0.0018431040048599242,
+          0.0018001919984817504,
+          0.0018032640218734741,
+          0.0018431999683380126,
+          0.0018593920469284057,
+          0.0018063360452651978,
+          0.0018169280290603637,
+          0.0018394240140914917,
+          0.0017991679906845092,
+          0.0018595839738845825,
+          0.0018676799535751343
+        ],
+        "rank_mean_seconds": [
+          0.0016436847984790802,
+          0.0018284352004528045,
+          0.0018298384010791778,
+          0.0017925791978836059
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0018618769554871616,
+        "collective_model_relative_error": 0.016232938078917254,
+        "shared_model_seconds": 0.0019188861581760125,
+        "shared_model_relative_error": 0.047349188470914225
+      },
+      {
+        "operation": "all_reduce",
+        "world_size": 4,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.02936507682800293,
+        "median_seconds": 0.02919523239135742,
+        "min_seconds": 0.028827648162841796,
+        "max_seconds": 0.03147455978393555,
+        "samples_seconds": [
+          0.02911568069458008,
+          0.028996320724487306,
+          0.029216768264770508,
+          0.029150943756103515,
+          0.029683712005615235,
+          0.029271039962768555,
+          0.029081600189208984,
+          0.029405536651611327,
+          0.030473215103149414,
+          0.029215744018554687,
+          0.028827648162841796,
+          0.028996416091918945,
+          0.03147455978393555,
+          0.029174720764160156,
+          0.029328384399414063,
+          0.028947296142578124,
+          0.029601951599121094,
+          0.029111263275146484,
+          0.028935167312622072,
+          0.029293567657470702
+        ],
+        "rank_mean_seconds": [
+          0.027377563095092775,
+          0.02934722394943237,
+          0.02935323839187622,
+          0.029051899433135988
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.029386783051400196,
+        "collective_model_relative_error": 0.0007391849687437708,
+        "shared_model_seconds": 0.028861715033465154,
+        "shared_model_relative_error": 0.017141511240922894
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 4,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 6.989119946956635e-05,
+        "median_seconds": 6.939199939370156e-05,
+        "min_seconds": 6.524799764156342e-05,
+        "max_seconds": 7.756800204515457e-05,
+        "samples_seconds": [
+          7.756800204515457e-05,
+          7.436800003051758e-05,
+          7.228799909353256e-05,
+          7.529599964618684e-05,
+          7.155200093984604e-05,
+          6.707199662923813e-05,
+          6.611199676990509e-05,
+          6.63679987192154e-05,
+          6.524799764156342e-05,
+          6.84799998998642e-05,
+          6.572800129652023e-05,
+          6.646399945020676e-05,
+          6.598400324583054e-05,
+          6.707199662923813e-05,
+          7.523199915885926e-05,
+          7.37600028514862e-05,
+          6.563200056552886e-05,
+          7.222399860620499e-05,
+          7.107199728488922e-05,
+          7.030399888753891e-05
+        ],
+        "rank_mean_seconds": [
+          6.68015994131565e-05,
+          6.700959950685502e-05,
+          6.671680100262166e-05,
+          6.588320024311543e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 6.074615786634835e-05,
+        "collective_model_relative_error": 0.13084682581817972,
+        "shared_model_seconds": 6.485696408817159e-05,
+        "shared_model_relative_error": 0.07202960343507747
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 4,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.00013532000035047532,
+        "median_seconds": 0.00011036799848079682,
+        "min_seconds": 0.00010761599987745285,
+        "max_seconds": 0.0005657280087471009,
+        "samples_seconds": [
+          0.00010822399705648422,
+          0.00010956799983978272,
+          0.0001096320003271103,
+          0.00010950399935245514,
+          0.00011872000247240066,
+          0.00011011199653148651,
+          0.00012502400577068328,
+          0.00011763200163841247,
+          0.00010966400057077407,
+          0.0001167680025100708,
+          0.00011641599982976914,
+          0.00011785600334405899,
+          0.00011244799941778183,
+          0.00011631999909877777,
+          0.0005657280087471009,
+          0.00010819199681282043,
+          0.00010822399705648422,
+          0.00010812799632549286,
+          0.00011062400043010711,
+          0.00010761599987745285
+        ],
+        "rank_mean_seconds": [
+          0.00012838559821248054,
+          0.0001066015999764204,
+          0.00013088479936122893,
+          0.0001297408003360033
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.00012555752857614741,
+        "collective_model_relative_error": 0.07214359850017256,
+        "shared_model_seconds": 0.0001174796767352207,
+        "shared_model_relative_error": 0.1318380399722779
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 4,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.001063964807987213,
+        "median_seconds": 0.0010644959807395936,
+        "min_seconds": 0.001037984013557434,
+        "max_seconds": 0.001088927984237671,
+        "samples_seconds": [
+          0.0010801279544830323,
+          0.0010738240480422973,
+          0.001055840015411377,
+          0.0010473920106887817,
+          0.001046272039413452,
+          0.0010742080211639405,
+          0.0010848640203475952,
+          0.0010826560258865357,
+          0.0010500799417495728,
+          0.0010647679567337036,
+          0.001088927984237671,
+          0.0010715199708938598,
+          0.001042240023612976,
+          0.0010642240047454834,
+          0.0010788160562515258,
+          0.0010514240264892579,
+          0.0010578240156173706,
+          0.001060096025466919,
+          0.001037984013557434,
+          0.001066208004951477
+        ],
+        "rank_mean_seconds": [
+          0.0010046976029872894,
+          0.0010616464018821717,
+          0.0010600576043128967,
+          0.0010046607941389084
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0011625394599329324,
+        "collective_model_relative_error": 0.09264841393786404,
+        "shared_model_seconds": 0.0009594430790880063,
+        "shared_model_relative_error": 0.09823795685210576
+      },
+      {
+        "operation": "all_to_all",
+        "world_size": 4,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.015749584054946898,
+        "median_seconds": 0.01568387222290039,
+        "min_seconds": 0.015553695678710937,
+        "max_seconds": 0.016620416641235352,
+        "samples_seconds": [
+          0.015637184143066408,
+          0.015614784240722657,
+          0.015633343696594238,
+          0.01566915225982666,
+          0.01572665596008301,
+          0.01611612892150879,
+          0.015821023941040038,
+          0.015680928230285645,
+          0.01570751953125,
+          0.015746527671813965,
+          0.015624704360961915,
+          0.015669919967651366,
+          0.015553695678710937,
+          0.015656800270080568,
+          0.015686816215515136,
+          0.01570703983306885,
+          0.015710911750793456,
+          0.016620416641235352,
+          0.01574396800994873,
+          0.015664159774780275
+        ],
+        "rank_mean_seconds": [
+          0.015582552003860474,
+          0.015740969610214234,
+          0.0157410927772522,
+          0.01550836477279663
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.01775425036164149,
+        "collective_model_relative_error": 0.12728376188861523,
+        "shared_model_seconds": 0.014430857516732577,
+        "shared_model_relative_error": 0.08373088035935229
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 4,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 7.823520004749299e-05,
+        "median_seconds": 7.648000121116638e-05,
+        "min_seconds": 7.53600001335144e-05,
+        "max_seconds": 8.633600175380707e-05,
+        "samples_seconds": [
+          8.14720019698143e-05,
+          8.633600175380707e-05,
+          7.740800082683563e-05,
+          7.715199887752532e-05,
+          7.603199779987336e-05,
+          7.705599814653397e-05,
+          7.612799853086472e-05,
+          8.419200032949447e-05,
+          7.657600194215775e-05,
+          7.615999877452851e-05,
+          7.664000242948532e-05,
+          7.574400305747986e-05,
+          7.599999755620957e-05,
+          8.46719965338707e-05,
+          7.638400048017501e-05,
+          7.571200281381607e-05,
+          7.628799974918365e-05,
+          7.571200281381607e-05,
+          7.53600001335144e-05,
+          8.367999643087387e-05
+        ],
+        "rank_mean_seconds": [
+          7.78863999992609e-05,
+          7.762079946696758e-05,
+          7.568159885704518e-05,
+          7.681759968400001e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 6.811867366364829e-05,
+        "collective_model_relative_error": 0.12930913933502336,
+        "shared_model_seconds": 2.512716887252714e-05,
+        "shared_model_relative_error": 0.6788252748472096
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 4,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.00014947200044989587,
+        "median_seconds": 0.0001493760049343109,
+        "min_seconds": 0.00014316800236701966,
+        "max_seconds": 0.0001592960059642792,
+        "samples_seconds": [
+          0.0001576640009880066,
+          0.00015347200632095337,
+          0.00014668799936771394,
+          0.00014659200608730316,
+          0.00014950400590896606,
+          0.0001592960059642792,
+          0.00014345599710941315,
+          0.00015199999511241914,
+          0.0001462399959564209,
+          0.00015190400183200836,
+          0.00014316800236701966,
+          0.00014431999623775482,
+          0.0001488640010356903,
+          0.0001546880006790161,
+          0.00015059199929237367,
+          0.00014966399967670442,
+          0.00014339199662208557,
+          0.00014748799800872803,
+          0.00015119999647140504,
+          0.00014924800395965576
+        ],
+        "rank_mean_seconds": [
+          0.00012902399972081186,
+          0.0001446559987962246,
+          0.00014844160079956054,
+          0.00014222080111503602
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.00015081082672702235,
+        "collective_model_relative_error": 0.008957037258461418,
+        "shared_model_seconds": 9.529078573525928e-05,
+        "shared_model_relative_error": 0.36248404083411284
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 4,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0015721136033535004,
+        "median_seconds": 0.0014550399780273438,
+        "min_seconds": 0.0013822720050811767,
+        "max_seconds": 0.0018498239517211914,
+        "samples_seconds": [
+          0.0014655359983444215,
+          0.0014477440118789674,
+          0.0014228800535202027,
+          0.0013822720050811767,
+          0.0014028799533843993,
+          0.0014557119607925416,
+          0.0015459519624710083,
+          0.0014100799560546875,
+          0.001403231978416443,
+          0.0014414399862289428,
+          0.0014116480350494386,
+          0.0014317760467529297,
+          0.001454367995262146,
+          0.0017867840528488158,
+          0.0018205440044403076,
+          0.0018474240303039552,
+          0.0017793279886245726,
+          0.0018474880456924437,
+          0.001835360050201416,
+          0.0018498239517211914
+        ],
+        "rank_mean_seconds": [
+          0.001351315200328827,
+          0.0015514656007289886,
+          0.001569246405363083,
+          0.0013073775947093963
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0014738852757410074,
+        "collective_model_relative_error": 0.062481698143798656,
+        "shared_model_seconds": 0.0012179086555389735,
+        "shared_model_relative_error": 0.2253049315640846
+      },
+      {
+        "operation": "neighbor_exchange",
+        "world_size": 4,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.023127764701843263,
+        "median_seconds": 0.022898799896240232,
+        "min_seconds": 0.02254707145690918,
+        "max_seconds": 0.027846399307250976,
+        "samples_seconds": [
+          0.027846399307250976,
+          0.02254707145690918,
+          0.022669120788574217,
+          0.022967296600341795,
+          0.0229879035949707,
+          0.023455520629882813,
+          0.02298271942138672,
+          0.022973663330078126,
+          0.023061983108520506,
+          0.023013023376464842,
+          0.023069215774536134,
+          0.022830303192138673,
+          0.02282454490661621,
+          0.022677663803100587,
+          0.02270297622680664,
+          0.02328988838195801,
+          0.022809568405151366,
+          0.022574207305908204,
+          0.022692928314208983,
+          0.022579296112060547
+        ],
+        "rank_mean_seconds": [
+          0.017921985626220705,
+          0.02311770887374878,
+          0.02312386064529419,
+          0.017848516941070557
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.022643076459964766,
+        "collective_model_relative_error": 0.020956986035051958,
+        "shared_model_seconds": 0.019179794572398403,
+        "shared_model_relative_error": 0.17070262432798833
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 4,
+        "message_bytes": 16384,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 6.358719933778048e-05,
+        "median_seconds": 6.243199855089187e-05,
+        "min_seconds": 5.4976001381874084e-05,
+        "max_seconds": 7.999999821186065e-05,
+        "samples_seconds": [
+          6.45119994878769e-05,
+          6.348799914121628e-05,
+          7.577600330114365e-05,
+          6.435199826955795e-05,
+          6.179200112819672e-05,
+          6.143999844789505e-05,
+          6.319999694824218e-05,
+          6.159999966621399e-05,
+          7.072000205516816e-05,
+          7.999999821186065e-05,
+          6.246399879455566e-05,
+          6.207999959588052e-05,
+          6.255999952554703e-05,
+          7.199999690055847e-05,
+          6.239999830722809e-05,
+          5.555199831724167e-05,
+          5.529600009322166e-05,
+          5.6095998734235766e-05,
+          5.4976001381874084e-05,
+          6.143999844789505e-05
+        ],
+        "rank_mean_seconds": [
+          6.147839985787868e-05,
+          6.31407992914319e-05,
+          6.030400041490793e-05,
+          6.063199993222952e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 3.851232271388129e-05,
+        "collective_model_relative_error": 0.3943384342294958,
+        "shared_model_seconds": 6.485696408817159e-05,
+        "shared_model_relative_error": 0.019968873666632407
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 4,
+        "message_bytes": 262144,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 9.712320119142532e-05,
+        "median_seconds": 9.724800288677215e-05,
+        "min_seconds": 9.279999881982804e-05,
+        "max_seconds": 0.00010239999741315842,
+        "samples_seconds": [
+          0.0001013759970664978,
+          9.296000003814697e-05,
+          0.00010172799974679946,
+          9.628800302743912e-05,
+          9.721600264310837e-05,
+          9.916800260543823e-05,
+          9.334400296211243e-05,
+          9.728000313043594e-05,
+          0.00010019200295209884,
+          9.728000313043594e-05,
+          9.689600020647049e-05,
+          9.318400174379349e-05,
+          9.382399916648864e-05,
+          9.318400174379349e-05,
+          9.279999881982804e-05,
+          9.81760025024414e-05,
+          0.00010163199901580811,
+          9.523200243711472e-05,
+          0.00010239999741315842,
+          9.830400347709655e-05
+        ],
+        "rank_mean_seconds": [
+          9.543840102851391e-05,
+          9.489280097186565e-05,
+          9.619520120322704e-05,
+          9.440640173852444e-05
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 9.414665359050578e-05,
+        "collective_model_relative_error": 0.03064713234742858,
+        "shared_model_seconds": 0.0001174796767352207,
+        "shared_model_relative_error": 0.2095943635926261
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 4,
+        "message_bytes": 4194304,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.0009881440013647079,
+        "median_seconds": 0.0009724159836769105,
+        "min_seconds": 0.0009439359903335572,
+        "max_seconds": 0.0012499840259552002,
+        "samples_seconds": [
+          0.0009714239835739136,
+          0.0009731839895248413,
+          0.0009697279930114746,
+          0.0009796479940414428,
+          0.0009820160269737243,
+          0.0009653760194778442,
+          0.0009716479778289795,
+          0.0010004479885101318,
+          0.0009574400186538696,
+          0.000996511995792389,
+          0.0009687039852142334,
+          0.0009738559722900391,
+          0.0009564160108566284,
+          0.000997376024723053,
+          0.0009685760140419006,
+          0.0009439359903335572,
+          0.0009852480292320252,
+          0.0009847999811172486,
+          0.0009665600061416626,
+          0.0012499840259552002
+        ],
+        "rank_mean_seconds": [
+          0.000789140808582306,
+          0.000984265598654747,
+          0.0009646192014217377,
+          0.0009659568041563034
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.0009842959476164975,
+        "collective_model_relative_error": 0.00389422365859219,
+        "shared_model_seconds": 0.0009594430790880063,
+        "shared_model_relative_error": 0.02904528311365883
+      },
+      {
+        "operation": "reduce_scatter",
+        "world_size": 4,
+        "message_bytes": 67108864,
+        "split": "validation",
+        "warmup_iterations": 5,
+        "iterations": 20,
+        "measured_seconds": 0.016484779024124145,
+        "median_seconds": 0.015366512298583984,
+        "min_seconds": 0.015166303634643555,
+        "max_seconds": 0.020163583755493163,
+        "samples_seconds": [
+          0.015528287887573242,
+          0.015270719528198242,
+          0.015166303634643555,
+          0.015291135787963867,
+          0.015362912178039551,
+          0.015428607940673827,
+          0.018678783416748047,
+          0.020060159683227538,
+          0.020032512664794923,
+          0.020163583755493163,
+          0.016450559616088867,
+          0.015214207649230958,
+          0.015330304145812988,
+          0.015333663940429688,
+          0.01527567958831787,
+          0.015331647872924804,
+          0.016880640029907225,
+          0.018288639068603514,
+          0.015237119674682617,
+          0.015370112419128418
+        ],
+        "rank_mean_seconds": [
+          0.014517007923126221,
+          0.016477867031097413,
+          0.016475160026550292,
+          0.016152598571777345
+        ],
+        "checksum": "verified",
+        "collective_model_seconds": 0.015226684652032366,
+        "collective_model_relative_error": 0.07631854635422526,
+        "shared_model_seconds": 0.014430857516732577,
+        "shared_model_relative_error": 0.12459502820060976
+      }
+    ]
+  },
+  "planner": {
+    "scope": "communication-only primitive compositions; excludes model compute, overlap, optimizer behavior, and end-to-end training throughput",
+    "top1_accuracy": 0.875,
+    "correct_scenarios": 7,
+    "total_scenarios": 8,
+    "scenarios": [
+      {
+        "world_size": 2,
+        "message_bytes": 16384,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 5.3815993595249234e-05,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 6.877994687342084e-05,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 7.669207125078869e-05,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 9.284074668760577e-05,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 16384,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0001130798837377281,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 16384,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0001375598937468417,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 16384,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 5.4686400108039376e-05
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 6.314720027148723e-05
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 8.761920034885406e-05
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.00011031040009111165
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.0001190912000834942
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.00012629440054297446
+          }
+        ]
+      },
+      {
+        "world_size": 2,
+        "message_bytes": 262144,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 8.401695867270772e-05,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00011942439354302862,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00014028169155287738,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00016230776539249173,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 262144,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00017241719751584343,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 262144,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00023884878708605725,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 262144,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 9.009120054543019e-05
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 0.00011194720044732094
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 0.00014089439809322358
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.000164171202480793
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.00016653760001063346
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.00022389440089464187
+          }
+        ]
+      },
+      {
+        "world_size": 2,
+        "message_bytes": 4194304,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0005672323999120437,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0009297355402567533,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0011218142179656885,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 4194304,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.001157715616386296,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0012737800646706672,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 4194304,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0018594710805135066,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 4194304,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 0.000562663996219635
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 0.001026095998287201
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 0.0010837408006191254
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.0011084384143352508
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.0011202639907598496
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.0021674816012382508
+          }
+        ]
+      },
+      {
+        "world_size": 2,
+        "message_bytes": 67108864,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.008298679459741418,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.013894713887676349,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.01631216654516321,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 67108864,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.017436658413720996,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.019057336853121474,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 67108864,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.027789427775352697,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 67108864,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 0.008340027236938477
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 0.01491869764328003
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.01692292323112488
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.018692867088317872
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 0.022104222297668456
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.02983739528656006
+          }
+        ]
+      },
+      {
+        "world_size": 4,
+        "message_bytes": 16384,
+        "predicted_choice": "data_parallel",
+        "measured_choice": "context_parallel",
+        "correct": false,
+        "predicted_ranking": [
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 3.40511600554367e-05,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 3.668780987174495e-05,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 6.81023201108734e-05,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 16384,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 6.811867366364829e-05,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 7.520013258562625e-05,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 16384,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 16384,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0001214923157326967,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 16384,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 5.628799982368946e-05
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 7.823520004749299e-05
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 8.858080059289933e-05
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.00011987519916146995
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.0001397823989391327
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.00017716160118579866
+          }
+        ]
+      },
+      {
+        "world_size": 4,
+        "message_bytes": 262144,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 9.23285867764285e-05,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00014157032449259698,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00015081082672702235,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00018647524036693428,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 262144,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 262144,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00025111505715229483,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 262144,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.00028314064898519396,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 262144,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 9.529599994421005e-05
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 0.00014947200044989587
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 0.00015286720171570778
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.00019241920113563537
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.00027064000070095063
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.00030573440343141555
+          }
+        ]
+      },
+      {
+        "world_size": 4,
+        "message_bytes": 4194304,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0009825810172513652,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0014738852757410074,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.0018618769554871616,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.001966876964867863,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 4194304,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 4194304,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.002325078919865865,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 4194304,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.003723753910974323,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 4194304,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 0.0009628832042217255
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 0.0015721136033535004
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 0.0018321360051631926
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.0019510272055864334
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.002127929615974426
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.0036642720103263852
+          }
+        ]
+      },
+      {
+        "world_size": 4,
+        "message_bytes": 67108864,
+        "predicted_choice": "context_parallel",
+        "measured_choice": "context_parallel",
+        "correct": true,
+        "predicted_ranking": [
+          {
+            "name": "context_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.015226619904850355,
+            "calls": [
+              {
+                "operation": "all_gather",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "pipeline_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.022643076459964766,
+            "calls": [
+              {
+                "operation": "neighbor_exchange",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "data_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.029386783051400196,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "zero_stage_2",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.03045330455688272,
+            "calls": [
+              {
+                "operation": "reduce_scatter",
+                "message_bytes": 67108864,
+                "count": 1
+              },
+              {
+                "operation": "all_gather",
+                "message_bytes": 67108864,
+                "count": 1
+              }
+            ]
+          },
+          {
+            "name": "expert_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.03550850072328298,
+            "calls": [
+              {
+                "operation": "all_to_all",
+                "message_bytes": 67108864,
+                "count": 2
+              }
+            ]
+          },
+          {
+            "name": "tensor_parallel",
+            "feasible": true,
+            "memory_bytes_per_rank": 0,
+            "predicted_communication_seconds": 0.05877356610280039,
+            "calls": [
+              {
+                "operation": "all_reduce",
+                "message_bytes": 67108864,
+                "count": 2
+              }
+            ]
+          }
+        ],
+        "measured_composed_ranking": [
+          {
+            "name": "context_parallel",
+            "measured_composed_seconds": 0.016152447986602782
+          },
+          {
+            "name": "pipeline_parallel",
+            "measured_composed_seconds": 0.023127764701843263
+          },
+          {
+            "name": "data_parallel",
+            "measured_composed_seconds": 0.02936507682800293
+          },
+          {
+            "name": "expert_parallel",
+            "measured_composed_seconds": 0.031499168109893796
+          },
+          {
+            "name": "zero_stage_2",
+            "measured_composed_seconds": 0.032637227010726924
+          },
+          {
+            "name": "tensor_parallel",
+            "measured_composed_seconds": 0.05873015365600586
+          }
+        ]
+      }
+    ]
+  },
+  "caveats": [
+    "The measurements are communication microbenchmarks, not end-to-end model training.",
+    "The planner ranks declared collective compositions only and excludes compute, overlap, optimizer behavior, kernel fusion, and convergence.",
+    "Pipeline uses a simultaneous neighbor exchange proxy rather than a complete pipeline schedule.",
+    "Context parallelism uses an all-gather proxy rather than a fused ring-attention kernel.",
+    "The fitted constants describe only the recorded single-node GPU topology."
+  ]
+}

@@ -1,15 +1,16 @@
-# Five ways to parallelize transformer training
+# Calibrating GPU collective models for parallelism planning
 
 This release candidate accompanies `article.md`. It turns the communication and
 memory formulas into typed Python calculators, deterministic simulations, one
-optional local CPU collective, and one local Gloo model validation sweep. The
-examples use the public gpt2-nano shape:
+optional local CPU collective, one local Gloo model validation sweep, and one
+single-node NCCL topology study. The examples use the public gpt2-nano shape:
 about 44 million parameters, 12 layers, hidden size 512, 8 attention heads,
 context length 1024, and MLP width 2048.
 
-The tracked release artifacts do not yet contain a multi-GPU benchmark. JSON
-fields and `artifacts/manifest.json` label evidence as `analytical`, `simulated`,
-`measured`, or `pending`.
+The tracked release artifacts contain a four-GPU collective microbenchmark. They
+do not contain end-to-end distributed training. JSON fields and
+`artifacts/manifest.json` label evidence as `analytical`, `simulated`, `measured`,
+or `pending`.
 
 ## Included implementations
 
@@ -21,6 +22,7 @@ fields and `artifacts/manifest.json` label evidence as `analytical`, `simulated`
 | Pipeline parallelism | GPipe forward-then-backward event simulator and bubble formula | Simulated |
 | Expert parallelism | Deterministic top-k token routing and remote all-to-all accounting | Simulated |
 | CPU processes | Optional PyTorch Gloo all-reduce and model validation sweep | Measured locally when run |
+| GPU collectives | NCCL calibration, held-out prediction, and communication-only planning | Measured on four RTX 4090 GPUs |
 
 The ZeRO defaults count BF16 parameters and gradients at 2 bytes each, two FP32
 Adam moments at 8 bytes total, and FP32 master parameters at 4 bytes. Activation
@@ -51,7 +53,7 @@ usually exposes one accelerator, so ZeRO, tensor, context, pipeline, and expert
 scaling remain analytical or simulated until they run on a separate multi-GPU
 host.
 
-### Pending NCCL topology study
+### Measured NCCL topology study
 
 `gpt2_nano_parallel.gpu_collectives` measures all-reduce, reduce-scatter,
 all-gather, all-to-all, and simultaneous neighbor exchange with NCCL. The
@@ -61,6 +63,12 @@ models and evaluates a communication-only planner against composed held-out
 measurements. The runner keeps its intermediate outputs outside the repository
 until both world sizes and the analysis finish, then copies the two raw artifacts
 and analyzed result into `artifacts/nccl-publication/`.
+
+The publication run measures `80` rows on four RTX 4090 GPUs. Primitive-specific
+models reach `10.87%` held-out mean absolute relative error, compared with
+`22.91%` for one shared ring model. The communication-only planner matches the
+measured composition winner in `7` of `8` held-out scenarios. The one miss occurs
+at world size `4` and `16 KiB`.
 
 Run it on one node with four visible CUDA devices:
 
@@ -123,8 +131,15 @@ validates its provenance and contents before marking it as measured.
 - `artifacts/publication_report.json`
 - `artifacts/figures/zero_memory.svg`
 - `artifacts/figures/pipeline_schedule.svg`
-- `artifacts/gloo_allreduce_model_validation.json` if the local sweep has run
 - `artifacts/manifest.json`
+
+`gpt2-parallel-allreduce` writes
+`artifacts/gloo_allreduce_model_validation.json`. The NCCL publication runner
+writes:
+
+- `artifacts/nccl-publication/raw-world-size-2.json`
+- `artifacts/nccl-publication/raw-world-size-4.json`
+- `artifacts/nccl-publication/results.json`
 
 The SVGs use formula and simulator outputs only. They contain no fabricated
 throughput, latency, utilization, or memory measurements.
@@ -142,7 +157,7 @@ uses two parameter gathers plus one gradient reduce-scatter per step as a compac
 educational model. Real frameworks can prefetch, retain, or gather parameters at
 different granularities.
 
-The pending NCCL study records `nvidia-smi topo -m` and fits each primitive at
+The measured NCCL study records `nvidia-smi topo -m` and fits each primitive at
 world sizes two and four on that one topology. Its neighbor exchange is a
 pipeline communication proxy, and its all-gather is a context-parallel proxy.
 Neither is a complete training implementation.
@@ -150,5 +165,3 @@ Neither is a complete training implementation.
 Ring-attention output reports an explicit byte count for every rank. Uneven
 context partitions therefore remain visible rather than being presented as an
 average rank.
-
-See `SIGNOFF.md` for validation status and hardware blockers.
