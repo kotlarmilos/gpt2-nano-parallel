@@ -46,7 +46,7 @@
       "id": "multi-gpu-scaling",
       "status": "pending",
       "files": [],
-      "note": "No multi-GPU run was performed."
+      "note": "The topology-calibrated NCCL study is implemented but has not yet run on the required multi-GPU host."
     }
   ],
   "files": {

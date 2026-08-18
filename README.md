@@ -7,8 +7,8 @@ examples use the public gpt2-nano shape:
 about 44 million parameters, 12 layers, hidden size 512, 8 attention heads,
 context length 1024, and MLP width 2048.
 
-No result in this repository is a multi-GPU benchmark. JSON fields and
-`artifacts/manifest.json` label evidence as `analytical`, `simulated`,
+The tracked release artifacts do not yet contain a multi-GPU benchmark. JSON
+fields and `artifacts/manifest.json` label evidence as `analytical`, `simulated`,
 `measured`, or `pending`.
 
 ## Included implementations
@@ -50,6 +50,30 @@ This command does not produce multi-GPU measurements. A standard Colab runtime
 usually exposes one accelerator, so ZeRO, tensor, context, pipeline, and expert
 scaling remain analytical or simulated until they run on a separate multi-GPU
 host.
+
+### Pending NCCL topology study
+
+`gpt2_nano_parallel.gpu_collectives` measures all-reduce, reduce-scatter,
+all-gather, all-to-all, and simultaneous neighbor exchange with NCCL. The
+publication configuration separates calibration message sizes from held-out
+validation sizes. It compares one shared ring model with primitive-specific
+models and evaluates a communication-only planner against composed held-out
+measurements. The runner keeps its intermediate outputs outside the repository
+until both world sizes and the analysis finish, then copies the two raw artifacts
+and analyzed result into `artifacts/nccl-publication/`.
+
+Run it on one node with four visible CUDA devices:
+
+```bash
+python -m pip install -e ".[cpu-demo]"
+./scripts/run_nccl_publication.sh
+```
+
+The planner maps data parallelism, ZeRO-2, tensor parallelism, context
+parallelism, pipeline parallelism, and expert parallelism to declared collective
+signatures. It ranks communication only. It does not model compute, overlap,
+optimizer execution, kernel fusion, or convergence, so it cannot identify the
+best end-to-end training strategy.
 
 ### Examples
 
@@ -117,6 +141,11 @@ does not turn the formula into a GPU or multi-node benchmark. ZeRO-3 communicati
 uses two parameter gathers plus one gradient reduce-scatter per step as a compact
 educational model. Real frameworks can prefetch, retain, or gather parameters at
 different granularities.
+
+The pending NCCL study records `nvidia-smi topo -m` and fits each primitive at
+world sizes two and four on that one topology. Its neighbor exchange is a
+pipeline communication proxy, and its all-gather is a context-parallel proxy.
+Neither is a complete training implementation.
 
 Ring-attention output reports an explicit byte count for every rank. Uneven
 context partitions therefore remain visible rather than being presented as an

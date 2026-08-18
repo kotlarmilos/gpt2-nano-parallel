@@ -1,8 +1,17 @@
+import hashlib
 import importlib.util
 import json
+import tempfile
 import unittest
+from dataclasses import asdict
 from pathlib import Path
 from types import ModuleType
+
+from gpt2_nano_parallel.gpu_collectives import (
+    _derive_study_analysis,
+    load_nccl_config,
+)
+from gpt2_nano_parallel.topology_planner import collective_seconds
 
 
 def _load_generator() -> ModuleType:
@@ -123,6 +132,111 @@ class ArtifactTests(unittest.TestCase):
             ],
         }
 
+    @staticmethod
+    def _write_nccl_study(directory: Path) -> dict[str, object]:
+        root = Path(__file__).parents[1]
+        config_path = root / "configs" / "nccl_publication.toml"
+        config = load_nccl_config(config_path)
+        config_hash = hashlib.sha256(config_path.read_bytes()).hexdigest()
+        source = {
+            "git_revision": "abc123",
+            "git_dirty": False,
+            "git_state_captured": "study_start",
+        }
+        raw_payloads = []
+        raw_entries = []
+        common_environment = {
+            "torch": "2.13.0",
+            "cuda": "13.0",
+            "nccl": "2.28.0",
+            "python": "3.11.0",
+            "platform": "test-platform",
+            "hostname": "test-host",
+            "gpu_names": ["Test GPU"] * max(config.world_sizes),
+            "topology": "GPU0 X GPU1",
+        }
+        for world_size in config.world_sizes:
+            environment = {
+                "backend": "nccl",
+                "device": "cuda",
+                "world_size": world_size,
+                **common_environment,
+            }
+            measurements = []
+            for operation in config.operations:
+                for message_bytes in config.message_bytes:
+                    measured = collective_seconds(
+                        operation,
+                        message_bytes,
+                        world_size,
+                        8_000_000_000.0,
+                        0.00001,
+                    )
+                    measurements.append(
+                        {
+                            "operation": operation,
+                            "world_size": world_size,
+                            "message_bytes": message_bytes,
+                            "split": (
+                                "calibration"
+                                if message_bytes in config.calibration_message_bytes
+                                else "validation"
+                            ),
+                            "warmup_iterations": config.warmup_iterations,
+                            "iterations": config.iterations,
+                            "measured_seconds": measured,
+                            "median_seconds": measured,
+                            "min_seconds": measured,
+                            "max_seconds": measured,
+                            "samples_seconds": [measured] * config.iterations,
+                            "rank_mean_seconds": [measured] * world_size,
+                            "checksum": "verified",
+                        }
+                    )
+            raw = {
+                "schema_version": "nccl-collective-raw-v1",
+                "status": "measured",
+                "evidence": "measured",
+                "config_sha256": config_hash,
+                "config": asdict(config),
+                "source": source,
+                "environment": environment,
+                "measurements": measurements,
+            }
+            raw_path = directory / f"raw-world-size-{world_size}.json"
+            raw_path.write_text(json.dumps(raw), encoding="utf-8")
+            raw_payloads.append(raw)
+            raw_entries.append(
+                {
+                    "path": raw_path.name,
+                    "sha256": hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+                    "world_size": world_size,
+                    "environment": environment,
+                }
+            )
+        return {
+            "schema_version": "nccl-topology-study-v1",
+            "status": "measured",
+            "evidence": "measured",
+            "scope": (
+                "single-node NCCL collective calibration with held-out message sizes "
+                "and a communication-only strategy planner"
+            ),
+            "config_path": "configs/nccl_publication.toml",
+            "config_sha256": config_hash,
+            "source": source,
+            "measurement_source_revision": "abc123",
+            "splits": {
+                "calibration_message_bytes": list(
+                    config.calibration_message_bytes
+                ),
+                "validation_message_bytes": list(config.validation_message_bytes),
+                "overlap": False,
+            },
+            "raw_artifacts": raw_entries,
+            **_derive_study_analysis(config, raw_payloads),
+        }
+
     def test_validates_cpu_measurement_provenance_and_content(self) -> None:
         generator = _load_generator()
         raw = json.dumps(self._measurement()).encode()
@@ -152,6 +266,35 @@ class ArtifactTests(unittest.TestCase):
         measurement["measurements"][0]["relative_error"] = -1.0
         with self.assertRaises(ValueError):
             generator._validate_allreduce_validation(json.dumps(measurement).encode())
+
+    def test_validates_nccl_study(self) -> None:
+        generator = _load_generator()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            study = self._write_nccl_study(root)
+            validated = generator._validate_nccl_study(
+                json.dumps(study).encode(),
+                root,
+            )
+            self.assertEqual(validated["planner"]["top1_accuracy"], 1.0)
+
+    def test_rejects_nccl_calibration_leakage(self) -> None:
+        generator = _load_generator()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            study = self._write_nccl_study(root)
+            study["splits"]["validation_message_bytes"] = [4096]
+            with self.assertRaises(ValueError):
+                generator._validate_nccl_study(json.dumps(study).encode(), root)
+
+    def test_rejects_nccl_results_not_derived_from_raw_evidence(self) -> None:
+        generator = _load_generator()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            study = self._write_nccl_study(root)
+            study["held_out"]["comparisons"][0]["measured_seconds"] = 999.0
+            with self.assertRaisesRegex(ValueError, "held_out"):
+                generator._validate_nccl_study(json.dumps(study).encode(), root)
 
 
 if __name__ == "__main__":

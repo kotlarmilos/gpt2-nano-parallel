@@ -19,6 +19,7 @@ test = ["pytest>=8"]
 [project.scripts]
 gpt2-parallel = "gpt2_nano_parallel.cli:main"
 gpt2-parallel-allreduce = "gpt2_nano_parallel.allreduce_validation:main"
+gpt2-parallel-nccl = "gpt2_nano_parallel.gpu_collectives:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

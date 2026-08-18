@@ -15,6 +15,12 @@ ROOT = Path(__file__).parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from gpt2_nano_parallel.cli import _report
+from gpt2_nano_parallel.gpu_collectives import (
+    _derive_study_analysis,
+    _load_raw,
+    _validate_shared_environment,
+    load_nccl_config,
+)
 from gpt2_nano_parallel.memory import zero_memory
 
 
@@ -225,6 +231,161 @@ def _validate_allreduce_validation(raw: bytes) -> dict[str, Any]:
     return measurement
 
 
+def _validate_nccl_study(
+    raw: bytes, raw_directory: Path | None = None
+) -> dict[str, Any]:
+    """Validate the measured NCCL topology study before publication."""
+
+    try:
+        study = json.loads(raw)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("NCCL study is not valid UTF-8 JSON") from error
+    if not isinstance(study, dict):
+        raise ValueError("NCCL study must be a JSON object")
+    expected = {
+        "schema_version": "nccl-topology-study-v1",
+        "status": "measured",
+        "evidence": "measured",
+        "scope": (
+            "single-node NCCL collective calibration with held-out message sizes "
+            "and a communication-only strategy planner"
+        ),
+    }
+    for key, value in expected.items():
+        if study.get(key) != value:
+            raise ValueError(f"NCCL study has invalid {key}")
+    source = study.get("source")
+    if (
+        not isinstance(source, dict)
+        or source.get("git_dirty") is not False
+        or source.get("git_state_captured") != "study_start"
+        or not isinstance(source.get("git_revision"), str)
+        or not source["git_revision"]
+    ):
+        raise ValueError("NCCL study has invalid source provenance")
+    config_sha256 = study.get("config_sha256")
+    if not isinstance(config_sha256, str) or len(config_sha256) != 64:
+        raise ValueError("NCCL study has invalid config hash")
+    config_path = study.get("config_path")
+    if not isinstance(config_path, str) or not config_path:
+        raise ValueError("NCCL study has invalid config path")
+    splits = study.get("splits")
+    if (
+        not isinstance(splits, dict)
+        or splits.get("overlap") is not False
+        or not isinstance(splits.get("calibration_message_bytes"), list)
+        or not isinstance(splits.get("validation_message_bytes"), list)
+        or set(splits["calibration_message_bytes"])
+        & set(splits["validation_message_bytes"])
+    ):
+        raise ValueError("NCCL study has invalid calibration split")
+    raw_artifacts = study.get("raw_artifacts")
+    if not isinstance(raw_artifacts, list) or len(raw_artifacts) < 2:
+        raise ValueError("NCCL study has incomplete raw artifacts")
+    for artifact in raw_artifacts:
+        if (
+            not isinstance(artifact, dict)
+            or not isinstance(artifact.get("sha256"), str)
+            or len(artifact["sha256"]) != 64
+            or not isinstance(artifact.get("world_size"), int)
+            or artifact["world_size"] <= 1
+            or not isinstance(artifact.get("environment"), dict)
+            or artifact["environment"].get("backend") != "nccl"
+        ):
+            raise ValueError("NCCL study has invalid raw artifact provenance")
+    if raw_directory is None:
+        raise ValueError("NCCL study validation requires raw artifacts")
+    if config_path != "configs/nccl_publication.toml":
+        raise ValueError("NCCL study must use the repository publication config")
+    resolved_config = (ROOT / config_path).resolve()
+    try:
+        resolved_config.relative_to(ROOT.resolve())
+    except ValueError as error:
+        raise ValueError("NCCL study config escapes the repository") from error
+    if not resolved_config.is_file() or _sha256(resolved_config) != config_sha256:
+        raise ValueError("NCCL study config hash does not match the repository")
+    config = load_nccl_config(resolved_config)
+    seen_world_sizes: set[int] = set()
+    loaded_artifacts: list[dict[str, object]] = []
+    measurement_revisions: set[str] = set()
+    for artifact in raw_artifacts:
+        artifact_name = artifact["path"]
+        if (
+            not isinstance(artifact_name, str)
+            or Path(artifact_name).name != artifact_name
+        ):
+            raise ValueError("NCCL raw artifact path must be a file name")
+        artifact_path = raw_directory / artifact_name
+        if (
+            not artifact_path.is_file()
+            or _sha256(artifact_path) != artifact["sha256"]
+        ):
+            raise ValueError("NCCL raw artifact hash does not match")
+        loaded = _load_raw(artifact_path, config, config_sha256)
+        loaded_artifacts.append(loaded)
+        environment = loaded["environment"]
+        world_size = environment["world_size"]
+        expected_name = f"raw-world-size-{world_size}.json"
+        if (
+            world_size != artifact["world_size"]
+            or artifact.get("environment") != environment
+            or artifact_name != expected_name
+            or world_size in seen_world_sizes
+        ):
+            raise ValueError("NCCL raw artifact metadata is inconsistent")
+        seen_world_sizes.add(world_size)
+        measurement_revisions.add(str(loaded["source"]["git_revision"]))
+    if seen_world_sizes != set(config.world_sizes):
+        raise ValueError("NCCL raw artifacts do not cover configured world sizes")
+    _validate_shared_environment(loaded_artifacts)
+    if (
+        len(measurement_revisions) != 1
+        or study.get("measurement_source_revision")
+        != next(iter(measurement_revisions))
+        or source.get("git_revision") != next(iter(measurement_revisions))
+    ):
+        raise ValueError("NCCL study source revisions are inconsistent")
+    expected_splits = {
+        "calibration_message_bytes": list(config.calibration_message_bytes),
+        "validation_message_bytes": list(config.validation_message_bytes),
+        "overlap": False,
+    }
+    if splits != expected_splits:
+        raise ValueError("NCCL study splits do not match the validated config")
+    derived = _derive_study_analysis(config, loaded_artifacts)
+    for key, expected_value in derived.items():
+        if study.get(key) != expected_value:
+            raise ValueError(f"NCCL study {key} does not match raw artifacts")
+    held_out = study.get("held_out")
+    if not isinstance(held_out, dict):
+        raise ValueError("NCCL study has invalid held-out results")
+    comparisons = held_out.get("comparisons")
+    if not isinstance(comparisons, list) or not comparisons:
+        raise ValueError("NCCL study has no held-out comparisons")
+    for row in comparisons:
+        if not isinstance(row, dict) or row.get("split") != "validation":
+            raise ValueError("NCCL study contains a non-validation comparison")
+        for key in (
+            "measured_seconds",
+            "collective_model_seconds",
+            "collective_model_relative_error",
+            "shared_model_seconds",
+            "shared_model_relative_error",
+        ):
+            if not _finite_number(row.get(key)) or float(row[key]) < 0:
+                raise ValueError(f"NCCL study has invalid held-out {key}")
+    planner = study.get("planner")
+    if (
+        not isinstance(planner, dict)
+        or not _finite_number(planner.get("top1_accuracy"))
+        or not 0 <= float(planner["top1_accuracy"]) <= 1
+        or not isinstance(planner.get("scenarios"), list)
+        or not planner["scenarios"]
+    ):
+        raise ValueError("NCCL study has invalid planner evaluation")
+    return study
+
+
 def _memory_svg(path: Path) -> None:
     values = [zero_memory(44_000_000, 8, stage).total / 2**20 for stage in range(4)]
     width, height = 720, 420
@@ -368,6 +529,43 @@ def main() -> None:
             "sha256": validation_digest
         }
 
+    nccl_path = artifacts / "nccl-publication" / "results.json"
+    nccl_digest: str | None = None
+    nccl_status = "pending"
+    nccl_files: list[str] = []
+    nccl_note = (
+        "The topology-calibrated NCCL study is implemented but has not yet run "
+        "on the required multi-GPU host."
+    )
+    if nccl_path.exists():
+        try:
+            nccl_bytes = nccl_path.read_bytes()
+            validated_nccl = _validate_nccl_study(nccl_bytes, nccl_path.parent)
+            nccl_digest = hashlib.sha256(nccl_bytes).hexdigest()
+            nccl_status = "measured"
+            validated_raw_paths = [
+                nccl_path.parent / artifact["path"]
+                for artifact in validated_nccl["raw_artifacts"]
+            ]
+            nccl_files = [
+                str(path.relative_to(ROOT))
+                for path in (*validated_raw_paths, nccl_path)
+            ]
+            nccl_note = (
+                "Validated single-node NCCL collective calibration with held-out "
+                "message sizes; not end-to-end distributed model training."
+            )
+            files[str(nccl_path.relative_to(ROOT))] = {
+                "sha256": nccl_digest
+            }
+            for raw_path in validated_raw_paths:
+                files[str(raw_path.relative_to(ROOT))] = {
+                    "sha256": _sha256(raw_path)
+                }
+        except (OSError, ValueError) as error:
+            nccl_status = "pending"
+            nccl_note = f"NCCL study validation failed with {error}"
+
     manifest = {
         "schema_version": 1,
         "generated_by": "scripts/generate_artifacts.py",
@@ -413,9 +611,9 @@ def main() -> None:
             },
             {
                 "id": "multi-gpu-scaling",
-                "status": "pending",
-                "files": [],
-                "note": "No multi-GPU run was performed.",
+                "status": nccl_status,
+                "files": nccl_files,
+                "note": nccl_note,
             },
         ],
         "files": files,

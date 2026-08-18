@@ -1,0 +1,30 @@
+[model]
+parameters = 44000000
+layers = 12
+hidden_size = 512
+heads = 8
+context_length = 1024
+mlp_size = 2048
+
+[parallel]
+world_size = 4
+pipeline_stages = 4
+microbatches = 16
+tokens = 1024
+experts = 8
+top_k = 2
+
+[nccl_study]
+world_sizes = [2, 4]
+operations = [
+  "all_reduce",
+  "reduce_scatter",
+  "all_gather",
+  "all_to_all",
+  "neighbor_exchange",
+]
+calibration_message_bytes = [4096, 65536, 1048576, 16777216]
+validation_message_bytes = [16384, 262144, 4194304, 67108864]
+warmup_iterations = 5
+iterations = 20
+timeout_seconds = 600.0
