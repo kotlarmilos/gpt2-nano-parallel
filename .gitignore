@@ -5,6 +5,3 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-
-# Internal release checklist, not published
-SIGNOFF.md

@@ -20,10 +20,11 @@ from typing import Any, Callable, Mapping, Sequence
 from .topology_planner import (
     COLLECTIVES,
     compare_holdout,
+    constant_choice_baseline,
     error_summary,
     evaluate_planner,
     fit_collective_models,
-    fit_shared_ring_model,
+    fit_shared_collective_model,
 )
 
 ELEMENT_BYTES = 4
@@ -709,7 +710,7 @@ def _derive_study_analysis(
         raise ValueError("calibration and validation rows are incomplete")
 
     collective_models = fit_collective_models(calibration)
-    shared_model = fit_shared_ring_model(calibration)
+    shared_model = fit_shared_collective_model(calibration)
     comparisons = compare_holdout(holdout, collective_models, shared_model)
     return {
         "collective_models": collective_models,
@@ -732,7 +733,7 @@ def analyze(
     raw_paths: Sequence[str | Path],
     output: str | Path,
 ) -> dict[str, object]:
-    """Fit calibration models and evaluate held-out sizes and planner choices."""
+    """Fit timing models and evaluate held-out predictions and compositions."""
 
     source_state = _git_state()
     config_hash = _sha256(config_path)
@@ -759,13 +760,18 @@ def analyze(
     if source_state["git_dirty"] or source_state["git_revision"] not in revisions:
         raise ValueError("analysis must use the clean measurement source revision")
     derived = _derive_study_analysis(config, raw_artifacts)
+    planner = derived["planner"]
+    baseline = constant_choice_baseline(planner["scenarios"])  # type: ignore[index]
+    baseline_label = str(baseline["choice"]).replace("_", " ")
+    if baseline["choice"] == "context_parallel":
+        baseline_label += " all-gather proxy"
     result: dict[str, object] = {
         "schema_version": "nccl-topology-study-v1",
         "status": "measured",
         "evidence": "measured",
         "scope": (
-            "single-node NCCL collective calibration with held-out message sizes "
-            "and a communication-only strategy planner"
+            "single-node NCCL collective timing prediction with held-out message "
+            "sizes and a communication-composition planner"
         ),
         "created_at": datetime.now(UTC).isoformat(),
         "command": (
@@ -796,6 +802,13 @@ def analyze(
         "caveats": [
             "The measurements are communication microbenchmarks, not end-to-end model training.",
             "The planner ranks declared collective compositions only and excludes compute, overlap, optimizer behavior, kernel fusion, and convergence.",
+            (
+                f"The planner scores {planner['correct_scenarios']}/"
+                f"{planner['total_scenarios']}; always choosing "
+                f"{baseline_label} scores {baseline['correct_scenarios']}/"
+                f"{baseline['total_scenarios']}, so the planner does not beat "
+                "that constant baseline."
+            ),
             "Pipeline uses a simultaneous neighbor exchange proxy rather than a complete pipeline schedule.",
             "Context parallelism uses an all-gather proxy rather than a fused ring-attention kernel.",
             "The fitted constants describe only the recorded single-node GPU topology.",
@@ -839,10 +852,10 @@ def main() -> None:
             json.dumps(
                 {
                     "artifact": args.output,
-                    "collective_specific_mare": result["held_out"][
+                    "operation_specific_mare": result["held_out"][
                         "collective_specific_error"
                     ]["mean_absolute_relative_error"],
-                    "shared_ring_mare": result["held_out"]["shared_ring_error"][
+                    "shared_model_mare": result["held_out"]["shared_ring_error"][
                         "mean_absolute_relative_error"
                     ],
                     "planner_top1_accuracy": result["planner"]["top1_accuracy"],

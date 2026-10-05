@@ -5,20 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gpt2-nano-parallel"
 version = "0.1.0rc1"
-description = "Executable calculators and CPU simulations for five transformer parallelism strategies"
+description = "Measured NCCL collective timing models and composition evaluation"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
 authors = [{ name = "Milos Kotlar" }]
 dependencies = []
 
 [project.optional-dependencies]
-cpu-demo = ["torch>=2.2"]
-test = ["pytest>=8"]
+gpu = ["torch>=2.2"]
 
 [project.scripts]
-gpt2-parallel = "gpt2_nano_parallel.cli:main"
-gpt2-parallel-allreduce = "gpt2_nano_parallel.allreduce_validation:main"
 gpt2-parallel-nccl = "gpt2_nano_parallel.gpu_collectives:main"
 
 [tool.setuptools.packages.find]
@@ -26,7 +22,3 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 gpt2_nano_parallel = ["py.typed"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-q"

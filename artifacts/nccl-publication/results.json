@@ -2,7 +2,7 @@
   "schema_version": "nccl-topology-study-v1",
   "status": "measured",
   "evidence": "measured",
-  "scope": "single-node NCCL collective calibration with held-out message sizes and a communication-only strategy planner",
+  "scope": "single-node NCCL collective timing prediction with held-out message sizes and a communication-composition planner",
   "created_at": "2026-08-18T22:11:39.727431+00:00",
   "command": "python -m gpt2_nano_parallel.gpu_collectives analyze configs/nccl_publication.toml ../gpt2-nano-parallel-nccl-run/raw-world-size-2.json ../gpt2-nano-parallel-nccl-run/raw-world-size-4.json --output ../gpt2-nano-parallel-nccl-run/results.json",
   "config_path": "configs/nccl_publication.toml",
@@ -2930,6 +2930,7 @@
   "caveats": [
     "The measurements are communication microbenchmarks, not end-to-end model training.",
     "The planner ranks declared collective compositions only and excludes compute, overlap, optimizer behavior, kernel fusion, and convergence.",
+    "The planner scores 7/8; always choosing the context-parallel all-gather proxy scores 8/8, so the planner does not beat that constant baseline.",
     "Pipeline uses a simultaneous neighbor exchange proxy rather than a complete pipeline schedule.",
     "Context parallelism uses an all-gather proxy rather than a fused ring-attention kernel.",
     "The fitted constants describe only the recorded single-node GPU topology."

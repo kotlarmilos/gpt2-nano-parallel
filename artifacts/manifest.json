@@ -1,82 +1,40 @@
 {
   "schema_version": 1,
-  "generated_by": "scripts/generate_artifacts.py",
-  "status_definitions": {
-    "analytical": "Derived from explicit formulas.",
-    "simulated": "Produced by deterministic software simulation.",
-    "measured": "Observed from a real local execution.",
-    "pending": "Not run on the hardware needed for the claim."
+  "base_release_revision": "83d4fbe9b991739b6f13764dd64d2ffac4823a6e",
+  "claim": {
+    "measurement_rows": 80,
+    "gpu_model": "NVIDIA GeForce RTX 4090",
+    "gpu_count": 4,
+    "collective_primitives": 5,
+    "collective_specific_mean_absolute_relative_error": 0.1086538193879513,
+    "shared_model_mean_absolute_relative_error": 0.2290635640495112,
+    "collective_specific_max_absolute_relative_error": 0.6155920941386677,
+    "planner_correct_scenarios": 7,
+    "planner_total_scenarios": 8,
+    "constant_baseline_choice": "context_parallel",
+    "constant_baseline_correct_scenarios": 8
   },
-  "claims": [
-    {
-      "id": "memory-and-communication",
-      "status": "analytical",
-      "files": [
-        "artifacts/publication_report.json",
-        "artifacts/figures/zero_memory.svg"
-      ],
-      "note": "Formula outputs for the report and memory figure. Measured Gloo timing is tracked in a separate claim."
-    },
-    {
-      "id": "pipeline-and-routing",
-      "status": "simulated",
-      "files": [
-        "artifacts/publication_report.json",
-        "artifacts/figures/pipeline_schedule.svg"
-      ],
-      "note": "Deterministic event and token-routing simulations."
-    },
-    {
-      "id": "local-cpu-allreduce",
-      "status": "measured",
-      "files": [
-        "artifacts/cpu_allreduce_measured.json"
-      ],
-      "note": "Validated local CPU Gloo process measurement; not a GPU scaling result."
-    },
-    {
-      "id": "local-gloo-allreduce-model-validation",
-      "status": "measured",
-      "files": [
-        "artifacts/gloo_allreduce_model_validation.json"
-      ],
-      "note": "Validated local CPU Gloo all-reduce sweep against the analytical ring byte model; not a GPU scaling result."
-    },
-    {
-      "id": "multi-gpu-scaling",
-      "status": "measured",
-      "files": [
-        "artifacts/nccl-publication/raw-world-size-2.json",
-        "artifacts/nccl-publication/raw-world-size-4.json",
-        "artifacts/nccl-publication/results.json"
-      ],
-      "note": "Validated single-node NCCL collective calibration with held-out message sizes; not end-to-end distributed model training."
-    }
-  ],
+  "provenance": {
+    "measurement_source_revision": "2b58542cd4d3eb8cbfbbaeb6bb98f60ee7fc03f3",
+    "config_path": "configs/nccl_publication.toml",
+    "config_sha256": "9586d8a0d19339da9259c33bf419d0ad23e59c5cbe5209a478fcc83ee8eca507",
+    "raw_world_sizes": [
+      2,
+      4
+    ]
+  },
   "files": {
-    "artifacts/publication_report.json": {
-      "sha256": "74686c3f41455692fc3cfac2473afe8ecae0c7b31e5dea1169029762883886bf"
-    },
-    "artifacts/figures/zero_memory.svg": {
-      "sha256": "6a5a3d6f12a012b4d2a2fa4740e6a0fd89ab4399d715a7d669b1ce02b64541e7"
-    },
-    "artifacts/figures/pipeline_schedule.svg": {
-      "sha256": "7d44027f191d85e6fc2e60bf049f9b668fc62ec7babaa13eeb0bd5d9535a0120"
-    },
-    "artifacts/cpu_allreduce_measured.json": {
-      "sha256": "b3688233782a7987ce8a68010014a3e24e7118f607d055ef0afc29f236969fce"
-    },
-    "artifacts/gloo_allreduce_model_validation.json": {
-      "sha256": "1a4793473834a699b822961e4246d391e828d344d96ab7257031b6b8a0bdc8f3"
-    },
-    "artifacts/nccl-publication/results.json": {
-      "sha256": "84dd5b975e8b8baddb7b3ac596b915808ff84e8eb19c213aa8e91cf1a58459a0"
+    "configs/nccl_publication.toml": {
+      "sha256": "9586d8a0d19339da9259c33bf419d0ad23e59c5cbe5209a478fcc83ee8eca507"
     },
     "artifacts/nccl-publication/raw-world-size-2.json": {
       "sha256": "fedcace2a5ed1d09274e996fc09e0d6595dc2e34bfcbaefc939fde9555be0ffe"
     },
     "artifacts/nccl-publication/raw-world-size-4.json": {
       "sha256": "248b0b425551d8f407d3cb54b9a12d64a5b88a39da8e7fef458f53a37fe27514"
+    },
+    "artifacts/nccl-publication/results.json": {
+      "sha256": "a62f24c9b6556e765422c2bc7f61ae53a4d9e1aa594b944fa8860c881eaebafe"
     }
   }
 }

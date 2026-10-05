@@ -1,4 +1,4 @@
-"""Fit measured collective models and rank communication-only strategy plans."""
+"""Fit measured collective models and rank communication compositions."""
 
 from __future__ import annotations
 
@@ -175,7 +175,7 @@ def fit_collective_models(
     return models
 
 
-def fit_shared_ring_model(
+def fit_shared_collective_model(
     measurements: Sequence[Mapping[str, object]],
 ) -> dict[str, object]:
     """Fit one operation-agnostic model to the calibration measurements."""
@@ -209,7 +209,7 @@ def compare_holdout(
     collective_models: Mapping[str, Mapping[str, object]],
     shared_model: Mapping[str, object],
 ) -> list[dict[str, object]]:
-    """Compare primitive-specific and shared models on held-out measurements."""
+    """Compare operation-specific and shared models on held-out measurements."""
 
     rows: list[dict[str, object]] = []
     shared_bandwidth = _measurement_field(
@@ -287,11 +287,11 @@ class CollectiveCall:
 
 
 @dataclass(frozen=True)
-class StrategyCandidate:
+class CommunicationComposition:
     name: str
     calls: tuple[CollectiveCall, ...]
     memory_bytes_per_rank: int = 0
-    evidence: str = "communication-only model"
+    evidence: str = "communication-only prediction"
 
     def __post_init__(self) -> None:
         if not self.name:
@@ -312,13 +312,13 @@ def _model_for(
     return model
 
 
-def predict_candidate_seconds(
-    candidate: StrategyCandidate,
+def predict_composition_seconds(
+    composition: CommunicationComposition,
     world_size: int,
     models: Mapping[str, Mapping[str, object]],
 ) -> float:
     total = 0.0
-    for call in candidate.calls:
+    for call in composition.calls:
         model = _model_for(models, call.operation, world_size)
         total += call.count * collective_seconds(
             call.operation,
@@ -330,8 +330,8 @@ def predict_candidate_seconds(
     return total
 
 
-def measured_candidate_seconds(
-    candidate: StrategyCandidate,
+def measured_composition_seconds(
+    composition: CommunicationComposition,
     world_size: int,
     measurements: Sequence[Mapping[str, object]],
 ) -> float:
@@ -343,7 +343,7 @@ def measured_candidate_seconds(
             raise ValueError(f"duplicate measurement for {key}")
         lookup[key] = _measurement_field(record, "measured_seconds")
     total = 0.0
-    for call in candidate.calls:
+    for call in composition.calls:
         key = (call.operation, world_size, call.message_bytes)
         if key not in lookup:
             raise ValueError(f"missing held-out measurement for {key}")
@@ -351,36 +351,36 @@ def measured_candidate_seconds(
     return total
 
 
-def rank_candidates(
-    candidates: Sequence[StrategyCandidate],
+def rank_compositions(
+    compositions: Sequence[CommunicationComposition],
     world_size: int,
     models: Mapping[str, Mapping[str, object]],
     *,
     memory_budget_bytes: int | None = None,
 ) -> list[dict[str, object]]:
-    """Rank feasible candidates by predicted communication time only."""
+    """Rank feasible compositions by predicted communication time only."""
 
-    if not candidates:
-        raise ValueError("candidates must not be empty")
+    if not compositions:
+        raise ValueError("compositions must not be empty")
     if memory_budget_bytes is not None and memory_budget_bytes <= 0:
         raise ValueError("memory_budget_bytes must be positive")
     rows = []
-    for candidate in candidates:
+    for composition in compositions:
         feasible = (
             memory_budget_bytes is None
-            or candidate.memory_bytes_per_rank <= memory_budget_bytes
+            or composition.memory_bytes_per_rank <= memory_budget_bytes
         )
         rows.append(
             {
-                "name": candidate.name,
+                "name": composition.name,
                 "feasible": feasible,
-                "memory_bytes_per_rank": candidate.memory_bytes_per_rank,
+                "memory_bytes_per_rank": composition.memory_bytes_per_rank,
                 "predicted_communication_seconds": (
-                    predict_candidate_seconds(candidate, world_size, models)
+                    predict_composition_seconds(composition, world_size, models)
                     if feasible
                     else None
                 ),
-                "calls": [asdict(call) for call in candidate.calls],
+                "calls": [asdict(call) for call in composition.calls],
             }
         )
     feasible_rows = [row for row in rows if row["feasible"]]
@@ -391,46 +391,74 @@ def rank_candidates(
     return feasible_rows + infeasible_rows
 
 
-def default_strategy_candidates(message_bytes: int) -> tuple[StrategyCandidate, ...]:
-    """Return five primitive signatures for one matched communication payload."""
+def default_communication_compositions(
+    message_bytes: int,
+) -> tuple[CommunicationComposition, ...]:
+    """Return six declared collective compositions at one message size."""
 
     _positive_int(message_bytes, "message_bytes")
     return (
-        StrategyCandidate(
+        CommunicationComposition(
             "data_parallel",
             (CollectiveCall("all_reduce", message_bytes),),
         ),
-        StrategyCandidate(
+        CommunicationComposition(
             "zero_stage_2",
             (
                 CollectiveCall("reduce_scatter", message_bytes),
                 CollectiveCall("all_gather", message_bytes),
             ),
         ),
-        StrategyCandidate(
+        CommunicationComposition(
             "tensor_parallel",
             (CollectiveCall("all_reduce", message_bytes, count=2),),
         ),
-        StrategyCandidate(
+        CommunicationComposition(
             "context_parallel",
             (CollectiveCall("all_gather", message_bytes),),
         ),
-        StrategyCandidate(
+        CommunicationComposition(
             "pipeline_parallel",
             (CollectiveCall("neighbor_exchange", message_bytes),),
         ),
-        StrategyCandidate(
+        CommunicationComposition(
             "expert_parallel",
             (CollectiveCall("all_to_all", message_bytes, count=2),),
         ),
     )
 
 
+def constant_choice_baseline(
+    scenarios: Sequence[Mapping[str, object]],
+) -> dict[str, object]:
+    """Return the best constant choice over measured composition winners."""
+
+    if not scenarios:
+        raise ValueError("scenarios must not be empty")
+    counts: dict[str, int] = {}
+    for scenario in scenarios:
+        choice = scenario.get("measured_choice")
+        if not isinstance(choice, str) or not choice:
+            raise ValueError("scenario has an invalid measured_choice")
+        counts[choice] = counts.get(choice, 0) + 1
+    choice, correct = min(
+        counts.items(),
+        key=lambda item: (-item[1], item[0]),
+    )
+    total = len(scenarios)
+    return {
+        "choice": choice,
+        "correct_scenarios": correct,
+        "total_scenarios": total,
+        "top1_accuracy": correct / total,
+    }
+
+
 def evaluate_planner(
     holdout_measurements: Sequence[Mapping[str, object]],
     models: Mapping[str, Mapping[str, object]],
 ) -> dict[str, object]:
-    """Evaluate communication-only top-1 choices against held-out primitives."""
+    """Evaluate predicted composition winners against held-out measurements."""
 
     dimensions = sorted(
         {
@@ -442,19 +470,19 @@ def evaluate_planner(
     scenarios: list[dict[str, object]] = []
     correct = 0
     for world_size, message_bytes in dimensions:
-        candidates = default_strategy_candidates(message_bytes)
-        predicted = rank_candidates(candidates, world_size, models)
+        compositions = default_communication_compositions(message_bytes)
+        predicted = rank_compositions(compositions, world_size, models)
         measured = sorted(
             (
                 {
-                    "name": candidate.name,
-                    "measured_composed_seconds": measured_candidate_seconds(
-                        candidate,
+                    "name": composition.name,
+                    "measured_composed_seconds": measured_composition_seconds(
+                        composition,
                         world_size,
                         holdout_measurements,
                     ),
                 }
-                for candidate in candidates
+                for composition in compositions
             ),
             key=lambda row: float(row["measured_composed_seconds"]),
         )
